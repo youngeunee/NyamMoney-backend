@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS transactions (
   CONSTRAINT fk_tx_user FOREIGN KEY (user_id)
     REFERENCES users(user_id) ON DELETE CASCADE,
   CONSTRAINT fk_tx_category FOREIGN KEY (category_id)
-    REFERENCES categories(category_id) ON DELETE SET NULL,
+    REFERENCES categories(category_id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 챌린지

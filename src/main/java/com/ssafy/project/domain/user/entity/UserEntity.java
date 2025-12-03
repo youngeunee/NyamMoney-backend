@@ -1,4 +1,4 @@
-package com.ssafy.project.api.v1.user.dto;
+package com.ssafy.project.domain.user.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDto {
+public class UserEntity {
     private Long userId;
     private String loginId;
     private String email;

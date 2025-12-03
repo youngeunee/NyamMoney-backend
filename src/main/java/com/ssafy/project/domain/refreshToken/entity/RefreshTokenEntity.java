@@ -1,4 +1,4 @@
-package com.ssafy.project.api.v1.refreshToken.dto;
+package com.ssafy.project.domain.refreshToken.entity;
 
 import java.time.LocalDateTime;
 
@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RefreshTokenDto {
+public class RefreshTokenEntity {
     private Long tokenId;
     private Long userId;
     private String tokenHash;

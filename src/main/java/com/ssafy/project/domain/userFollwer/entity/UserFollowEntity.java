@@ -1,4 +1,4 @@
-package com.ssafy.project.api.v1.userFollow.dto;
+package com.ssafy.project.domain.userFollwer.entity;
 
 import java.time.LocalDateTime;
 
@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserFollowDto {
+public class UserFollowEntity {
     private Long followId;
     private Long followerId;
     private Long followeeId;

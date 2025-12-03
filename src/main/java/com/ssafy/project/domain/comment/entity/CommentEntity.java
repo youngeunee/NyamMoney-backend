@@ -1,4 +1,4 @@
-package com.ssafy.project.api.v1.postLike.dto;
+package com.ssafy.project.domain.comment.entity;
 
 import java.time.LocalDateTime;
 
@@ -11,9 +11,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PostLikeDto {
-    private Long likedId;
+public class CommentEntity {
+    private Long commentId;
     private Long postId;
     private Long userId;
+    private String contentMd;
     private LocalDateTime createdAt;
+    private LocalDateTime deletedAt;
 }

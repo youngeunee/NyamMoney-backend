@@ -1,4 +1,4 @@
-package com.ssafy.project.api.v1.challengeParticipant.dto;
+package com.ssafy.project.domain.challengeParticipant.entity;
 
 import java.time.LocalDateTime;
 
@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChallengeParticipantDto {
+public class ChallengeParticipantEntity {
     private Long participantId;
     private Long challengeId;
     private Long userId;

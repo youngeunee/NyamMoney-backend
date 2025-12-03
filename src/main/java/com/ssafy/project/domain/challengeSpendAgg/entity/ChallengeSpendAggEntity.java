@@ -1,4 +1,4 @@
-package com.ssafy.project.api.v1.challengeSpendAgg.dto;
+package com.ssafy.project.domain.challengeSpendAgg.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChallengeSpendAggDto {
+public class ChallengeSpendAggEntity {
     private Long spendId;
     private Long challengeId;
     private Long userId;

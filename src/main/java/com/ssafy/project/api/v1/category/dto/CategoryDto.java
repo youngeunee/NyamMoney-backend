@@ -1,4 +1,4 @@
-package com.ssafy.project.domain.auditLog.entity;
+package com.ssafy.project.api.v1.category.dto;
 
 import java.time.LocalDateTime;
 
@@ -11,10 +11,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AuditLogEntity {
-    private Long logId;
-    private Long userId;
-    private String event;
-    private String meta;
+public class CategoryDto {
+    private Long categoryId;
+    private String name;
     private LocalDateTime createdAt;
 }

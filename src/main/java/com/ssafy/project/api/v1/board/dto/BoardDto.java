@@ -1,4 +1,4 @@
-package com.ssafy.project.domain.board.entity;
+package com.ssafy.project.api.v1.board.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BoardEntity {
+public class BoardDto {
     private Long boardId;
     private String slug;
     private String name;

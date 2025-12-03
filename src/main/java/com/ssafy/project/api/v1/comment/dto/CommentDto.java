@@ -1,4 +1,4 @@
-package com.ssafy.project.domain.post.entity;
+package com.ssafy.project.api.v1.comment.dto;
 
 import java.time.LocalDateTime;
 
@@ -11,15 +11,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PostEntity {
+public class CommentDto {
+    private Long commentId;
     private Long postId;
-    private Long boardId;
     private Long userId;
-    private Long challengeId;
-    private String title;
     private String contentMd;
-    private Integer likesCount;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 }

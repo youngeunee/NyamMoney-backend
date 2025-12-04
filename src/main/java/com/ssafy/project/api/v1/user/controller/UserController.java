@@ -16,7 +16,7 @@ import com.ssafy.project.api.v1.user.service.UserService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/v1/user")
+@RequestMapping("/api/v1/users")
 public class UserController {
 	
 	private final UserService uService;
@@ -34,10 +34,4 @@ public class UserController {
 		return ResponseEntity.ok(res);
 	}
 	
-	@PostMapping("login")
-	public ResponseEntity<UserLoginResponse> login(@Valid @RequestBody UserLoginRequest req){
-		UserLoginResponse res = uService.login(req);
-		
-		return ResponseEntity.ok(res);
-	}
 }

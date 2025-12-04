@@ -4,6 +4,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 import jakarta.validation.constraints.NotBlank;
+
+import com.ssafy.project.domain.user.model.ProfileVisibility;
+import com.ssafy.project.domain.user.model.ShareLevel;
+
 import jakarta.validation.constraints.Email;
 
 @Getter
@@ -24,7 +28,11 @@ public class UserSignupRequest {
 
     @Email
     private String email;
-
+    
+    private ProfileVisibility profileVisibility;
+    
+    private ShareLevel shareLevel;
+    
     private Long monthlyBudget;
     private Long triggerBudget;
 }

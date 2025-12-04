@@ -38,6 +38,8 @@ public class UserServiceImpl implements UserService {
 		        .email(req.getEmail())
 		        .monthlyBudget(req.getMonthlyBudget())
 		        .triggerBudget(req.getTriggerBudget())
+		        .profileVisibility(req.getProfileVisibility())
+		        .shareLevel(req.getShareLevel())
 		        .build();
 		
 		try {

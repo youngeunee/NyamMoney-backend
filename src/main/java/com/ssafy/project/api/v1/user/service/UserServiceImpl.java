@@ -4,6 +4,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.ssafy.project.api.v1.user.dto.UserDetailResponse;
 import com.ssafy.project.api.v1.user.dto.UserDto;
 import com.ssafy.project.api.v1.user.dto.UserLoginRequest;
 import com.ssafy.project.api.v1.user.dto.UserLoginResponse;
@@ -59,6 +60,22 @@ public class UserServiceImpl implements UserService {
 		if(!match) throw new IllegalArgumentException("아이디/비밀번호가 올바르지 않습니다.");
 		
 		return new UserLoginResponse(user.getUserId(), user.getLoginId(), user.getNickname());
+	}
+
+	@Override
+	public UserDetailResponse getUserDetail(Long userId) {
+		UserDto user = uMapper.findById(userId);
+		if(user == null) throw new IllegalAccessError("해당 사용자를 찾을 수 없습니다");
+		
+		return new UserDetailResponse(
+                user.getUserId(),
+                user.getLoginId(),
+                user.getNickname(),
+                user.getEmail(),
+                user.getMonthlyBudget(),
+                user.getTriggerBudget(),
+                user.getCreatedAt()
+        );
 	}
 
 }

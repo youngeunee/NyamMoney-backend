@@ -9,7 +9,7 @@ public interface UserMapper {
 
 	void insertUser(UserDto user);
 	
-	// UserDto findByLoginId(String loginId);
+	UserDto findByLoginId(String loginId);
 	// UserDto findByEmail(String email);
     // UserDto findByNickname(String nickname);
 }

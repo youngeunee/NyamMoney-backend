@@ -8,9 +8,9 @@ import com.ssafy.project.api.v1.user.dto.UserDto;
 public interface UserMapper {
 
 	void insertUser(UserDto user);
-	
 	UserDto findByLoginId(String loginId);
 	UserDto findById(Long userId);
+	int updateUser(UserDto user);
 	// UserDto findByEmail(String email);
     // UserDto findByNickname(String nickname);
 }

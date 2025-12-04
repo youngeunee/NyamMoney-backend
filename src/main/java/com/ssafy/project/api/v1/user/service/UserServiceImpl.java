@@ -9,6 +9,8 @@ import com.ssafy.project.api.v1.user.dto.UserDto;
 import com.ssafy.project.api.v1.user.dto.UserLoginRequest;
 import com.ssafy.project.api.v1.user.dto.UserLoginResponse;
 import com.ssafy.project.api.v1.user.dto.UserSignupRequest;
+import com.ssafy.project.api.v1.user.dto.UserUpdateRequest;
+import com.ssafy.project.api.v1.user.dto.UserUpdateResponse;
 import com.ssafy.project.api.v1.user.mapper.UserMapper;
 
 @Service
@@ -75,6 +77,72 @@ public class UserServiceImpl implements UserService {
                 user.getMonthlyBudget(),
                 user.getTriggerBudget(),
                 user.getCreatedAt()
+        );
+	}
+
+	@Override
+	public UserUpdateResponse updateUser(Long userId, UserUpdateRequest req) {
+		UserDto user = uMapper.findById(userId);
+		
+		if(user == null) throw new IllegalAccessError("해당 사용자를 찾을 수 없습니다");
+		
+		boolean isChanged = false;
+		
+		if (req.getNickname() != null) {
+            user.setNickname(req.getNickname());
+            isChanged = true;
+        }
+        if (req.getEmail() != null) {
+            user.setEmail(req.getEmail());
+            isChanged = true;
+        }
+        if (req.getMonthlyBudget() != null) {
+            user.setMonthlyBudget(req.getMonthlyBudget());
+            isChanged = true;
+        }
+        if (req.getTriggerBudget() != null) {
+            user.setTriggerBudget(req.getTriggerBudget());
+            isChanged = true;
+        }
+        if (req.getShareLevel() != null) {
+            user.setShareLevel(req.getShareLevel());
+            isChanged = true;
+        }
+        if (req.getProfileVisibility() != null) {
+            user.setProfileVisibility(req.getProfileVisibility());
+            isChanged = true;
+        }
+
+        
+        if (!isChanged) { // 바뀐거 없으면
+            return new UserUpdateResponse(
+                    user.getUserId(),
+                    user.getLoginId(),
+                    user.getNickname(),
+                    user.getEmail(),
+                    user.getMonthlyBudget(),
+                    user.getTriggerBudget(),
+                    user.getUpdatedAt(),
+                    user.getProfileVisibility(),
+                    user.getShareLevel()
+                    
+            );
+        }
+        
+        uMapper.updateUser(user);
+        
+        UserDto updated = uMapper.findById(userId);
+		
+        return new UserUpdateResponse(
+                updated.getUserId(),
+                updated.getLoginId(),
+                updated.getNickname(),
+                updated.getEmail(),
+                updated.getMonthlyBudget(),
+                updated.getTriggerBudget(),
+                updated.getUpdatedAt(),
+                updated.getProfileVisibility(),
+                updated.getShareLevel()
         );
 	}
 

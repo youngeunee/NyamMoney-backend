@@ -2,6 +2,7 @@ package com.ssafy.project.api.v1.user.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,6 +15,8 @@ import com.ssafy.project.api.v1.user.dto.UserLoginRequest;
 import com.ssafy.project.api.v1.user.dto.UserLoginResponse;
 import com.ssafy.project.api.v1.user.dto.UserSignupRequest;
 import com.ssafy.project.api.v1.user.dto.UserSignupResponse;
+import com.ssafy.project.api.v1.user.dto.UserUpdateRequest;
+import com.ssafy.project.api.v1.user.dto.UserUpdateResponse;
 import com.ssafy.project.api.v1.user.service.UserService;
 
 import jakarta.validation.Valid;
@@ -43,5 +46,9 @@ public class UserController {
 		return ResponseEntity.ok(res);
 	}
 	
-	
+	@PatchMapping("/{userId}")
+	public ResponseEntity<UserUpdateResponse> updateUser(@PathVariable Long userId, @RequestBody UserUpdateRequest req) {
+        UserUpdateResponse res = uService.updateUser(userId, req);
+        return ResponseEntity.ok(res);
+    }
 }

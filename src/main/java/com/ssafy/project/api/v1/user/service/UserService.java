@@ -5,6 +5,8 @@ import com.ssafy.project.api.v1.user.dto.UserDto;
 import com.ssafy.project.api.v1.user.dto.UserLoginRequest;
 import com.ssafy.project.api.v1.user.dto.UserLoginResponse;
 import com.ssafy.project.api.v1.user.dto.UserSignupRequest;
+import com.ssafy.project.api.v1.user.dto.UserUpdateRequest;
+import com.ssafy.project.api.v1.user.dto.UserUpdateResponse;
 
 public interface UserService {
 	UserDto signup(UserSignupRequest req);
@@ -12,4 +14,6 @@ public interface UserService {
 	UserLoginResponse login(UserLoginRequest req);
 	
 	UserDetailResponse getUserDetail(Long userId);
+	
+	UserUpdateResponse updateUser(Long userId, UserUpdateRequest req);
 }

@@ -62,4 +62,30 @@
 		WHERE user_id = #{userId} AND deleted_at IS NULL
 	</select>
 	
+	<update id="updateUser"
+        	parameterType="com.ssafy.project.api.v1.user.dto.UserDto">
+    	UPDATE users
+    	<set>
+        	<if test="nickname != null">
+            	nickname = #{nickname},
+        	</if>
+	        <if test="email != null">
+	            email = #{email},
+	        </if>
+	        <if test="monthlyBudget != null">
+	            monthly_budget = #{monthlyBudget},
+	        </if>
+	        <if test="triggerBudget != null">
+	            trigger_budget = #{triggerBudget},
+	        </if>
+	        <if test="shareLevel != null">
+    			share_level = #{shareLevel},
+			</if>
+			<if test="profileVisibility != null">
+    			profile_visibility = #{profileVisibility},
+			</if>
+
+	    </set>
+    	WHERE user_id = #{userId} AND deleted_at IS NULL
+	</update>
 </mapper>

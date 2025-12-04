@@ -149,4 +149,13 @@ public class UserServiceImpl implements UserService {
         );
 	}
 
+	@Override
+	public void deleteUser(Long userId) {
+		UserDto user = uMapper.findById(userId);
+		if(user == null) throw new IllegalAccessError("해당 사용자를 찾을 수 없습니다");
+		
+		int res = uMapper.deleteUser(userId);
+		if(res == 0) throw new IllegalAccessError("이미 탈퇴된 사용자입니다");
+	}
+
 }

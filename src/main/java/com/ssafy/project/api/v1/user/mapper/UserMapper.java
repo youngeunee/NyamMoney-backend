@@ -11,6 +11,7 @@ public interface UserMapper {
 	UserDto findByLoginId(String loginId);
 	UserDto findById(Long userId);
 	int updateUser(UserDto user);
+	int deleteUser(Long userId);
 	// UserDto findByEmail(String email);
     // UserDto findByNickname(String nickname);
 }

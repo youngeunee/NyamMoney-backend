@@ -1,6 +1,9 @@
 package com.ssafy.project.api.v1.user.controller;
 
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -51,4 +54,10 @@ public class UserController {
         UserUpdateResponse res = uService.updateUser(userId, req);
         return ResponseEntity.ok(res);
     }
+	
+	@DeleteMapping("/{userId}")
+	public ResponseEntity<?> deleteUser(@PathVariable Long userId){
+		uService.deleteUser(userId);
+		return ResponseEntity.ok(Map.of("message", "탈퇴되었습니다."));
+	}
 }

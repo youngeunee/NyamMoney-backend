@@ -88,4 +88,11 @@
 	    </set>
     	WHERE user_id = #{userId} AND deleted_at IS NULL
 	</update>
+	
+	<update id="deleteUser" parameterType="long">
+	    UPDATE users
+	    SET deleted_at = NOW()
+	    WHERE user_id = #{userId} AND deleted_at IS NULL
+	</update>
+
 </mapper>

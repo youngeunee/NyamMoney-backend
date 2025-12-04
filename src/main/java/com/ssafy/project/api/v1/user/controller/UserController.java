@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ssafy.project.api.v1.user.dto.UserDto;
 import com.ssafy.project.api.v1.user.dto.UserSignupRequest;
 import com.ssafy.project.api.v1.user.dto.UserSignupResponse;
+import com.ssafy.project.api.v1.user.service.UserService;
 
 import jakarta.validation.Valid;
 

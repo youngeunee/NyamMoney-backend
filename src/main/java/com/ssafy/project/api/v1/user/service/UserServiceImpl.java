@@ -5,6 +5,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.ssafy.project.api.v1.user.dto.UserDto;
+import com.ssafy.project.api.v1.user.dto.UserLoginRequest;
+import com.ssafy.project.api.v1.user.dto.UserLoginResponse;
 import com.ssafy.project.api.v1.user.dto.UserSignupRequest;
 import com.ssafy.project.api.v1.user.mapper.UserMapper;
 
@@ -43,6 +45,20 @@ public class UserServiceImpl implements UserService {
 	    }
 		
 		return user;
+	}
+
+	@Override
+	public UserLoginResponse login(UserLoginRequest req) {
+		UserDto user = uMapper.findByLoginId(req.getLoginId());
+		if(user == null) {
+			throw new IllegalArgumentException("아이디/비밀번호가 올바르지 않습니다.");
+		}
+		
+		boolean match = passwordEncoder.matches(req.getPassword(), user.getPwHash());
+		
+		if(!match) throw new IllegalArgumentException("아이디/비밀번호가 올바르지 않습니다.");
+		
+		return new UserLoginResponse(user.getUserId(), user.getLoginId(), user.getNickname());
 	}
 
 }

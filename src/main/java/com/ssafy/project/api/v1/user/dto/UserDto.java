@@ -24,8 +24,8 @@ public class UserDto {
     private ProfileVisibility profileVisibility;
     private ShareLevel shareLevel;
     private String timezone;
-    private BigDecimal monthlyBudget;
-    private BigDecimal triggerBudget;
+    private Long monthlyBudget;
+    private Long triggerBudget;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;

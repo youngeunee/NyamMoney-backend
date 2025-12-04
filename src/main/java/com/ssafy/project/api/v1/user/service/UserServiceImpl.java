@@ -1,5 +1,7 @@
 package com.ssafy.project.api.v1.user.service;
 
+import org.springframework.dao.DuplicateKeyException;
+
 import com.ssafy.project.api.v1.user.dto.UserDto;
 import com.ssafy.project.api.v1.user.dto.UserSignupRequest;
 
@@ -12,6 +14,7 @@ public class UserServiceImpl implements UserService {
 			return null; // 나중에 error로 바꾸기
 		}
 		
+		String hashedPw = "";
 		UserDto user = UserDto.builder()
 		        .loginId(req.getLoginId())
 		        .pwHash(hashedPw) // 비밀번호 해시처리해서 넣기 -> 나중에 추가

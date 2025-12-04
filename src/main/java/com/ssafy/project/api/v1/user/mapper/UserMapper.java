@@ -10,6 +10,7 @@ public interface UserMapper {
 	void insertUser(UserDto user);
 	
 	UserDto findByLoginId(String loginId);
+	UserDto findById(Long userId);
 	// UserDto findByEmail(String email);
     // UserDto findByNickname(String nickname);
 }

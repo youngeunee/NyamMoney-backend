@@ -6,20 +6,20 @@ import com.ssafy.project.domain.user.model.ProfileVisibility;
 import com.ssafy.project.domain.user.model.ShareLevel;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
-@Setter
 @AllArgsConstructor
-@NoArgsConstructor
-@Builder
-public class UserSignupResponse {
-	private Long userId;
+public class UserDetailResponse {
+
+    private Long userId;
+    private String loginId;
     private String nickname;
+    private String email;
+    private Long monthlyBudget;
+    private Long triggerBudget;
     private LocalDateTime createdAt;
+    private LocalDateTime upDatedAt;
     private ProfileVisibility profileVisibility;
     private ShareLevel shareLevel;
 }

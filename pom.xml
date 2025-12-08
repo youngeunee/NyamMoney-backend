@@ -83,17 +83,28 @@
 		    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 		    <version>2.6.0</version>
 		</dependency>
+<<<<<<< HEAD
 				<dependency>
 		    <groupId>org.springframework.security</groupId>
 		    <artifactId>spring-security-crypto</artifactId>
 		</dependency>
 
+=======
+		<dependency>
+		    <groupId>org.springframework.security</groupId>
+		    <artifactId>spring-security-crypto</artifactId>
+		</dependency>
+		
+>>>>>>> b5a6d4950f865b11ff1f05111c3fb04fb3eae9d2
 		<dependency>
 		    <groupId>org.springframework.boot</groupId>
 		    <artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> b5a6d4950f865b11ff1f05111c3fb04fb3eae9d2
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>
@@ -103,6 +114,11 @@
 				<version>${spring-ai.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+			<dependency>
+			    <groupId>org.springdoc</groupId>
+			    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			    <version>2.6.0</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

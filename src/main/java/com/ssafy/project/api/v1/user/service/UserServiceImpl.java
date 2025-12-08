@@ -15,15 +15,17 @@ import com.ssafy.project.api.v1.user.dto.UserSignupRequest;
 import com.ssafy.project.api.v1.user.dto.UserUpdateRequest;
 import com.ssafy.project.api.v1.user.dto.UserUpdateResponse;
 import com.ssafy.project.api.v1.user.mapper.UserMapper;
+import com.ssafy.project.security.jwt.JWTUtil;
 
 @Service
 public class UserServiceImpl implements UserService {
 	private final UserMapper uMapper;
 	private final PasswordEncoder passwordEncoder;
-	
-	public UserServiceImpl(UserMapper uMapper, PasswordEncoder passwordEncoder) {
+	private final JWTUtil jwtUtil;
+	public UserServiceImpl(UserMapper uMapper, PasswordEncoder passwordEncoder, JWTUtil jwtUtil) {
 		this.uMapper = uMapper;
 		this.passwordEncoder = passwordEncoder;
+		this.jwtUtil = jwtUtil;
 	}
 	
 	@Override
@@ -66,7 +68,11 @@ public class UserServiceImpl implements UserService {
 		
 		if(!match) throw new IllegalArgumentException("아이디/비밀번호가 올바르지 않습니다.");
 		
-		return new UserLoginResponse(user.getUserId(), user.getLoginId(), user.getNickname());
+
+        String accessToken = jwtUtil.createAccessToken(user);
+        String refreshToken = jwtUtil.createRefreshToken(user);
+        
+		return new UserLoginResponse(user.getUserId(), user.getLoginId(), user.getNickname(), accessToken, refreshToken);
 	}
 
 	@Override

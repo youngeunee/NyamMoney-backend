@@ -10,4 +10,6 @@ public class UserLoginResponse {
     private Long userId;
     private String loginId;
     private String nickname;
+    private String accessToken;
+    private String refreshToken;
 }

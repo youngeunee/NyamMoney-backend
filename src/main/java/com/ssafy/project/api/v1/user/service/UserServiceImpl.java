@@ -1,5 +1,7 @@
 package com.ssafy.project.api.v1.user.service;
 
+import java.net.Authenticator.RequestorType;
+
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -8,6 +10,7 @@ import com.ssafy.project.api.v1.user.dto.UserDetailResponse;
 import com.ssafy.project.api.v1.user.dto.UserDto;
 import com.ssafy.project.api.v1.user.dto.UserLoginRequest;
 import com.ssafy.project.api.v1.user.dto.UserLoginResponse;
+import com.ssafy.project.api.v1.user.dto.UserPasswordUpdateRequest;
 import com.ssafy.project.api.v1.user.dto.UserSignupRequest;
 import com.ssafy.project.api.v1.user.dto.UserUpdateRequest;
 import com.ssafy.project.api.v1.user.dto.UserUpdateResponse;
@@ -158,6 +161,25 @@ public class UserServiceImpl implements UserService {
 		
 		int res = uMapper.deleteUser(userId);
 		if(res == 0) throw new IllegalAccessError("이미 탈퇴된 사용자입니다");
+	}
+
+	@Override
+	public void updatePassword(Long userId, UserPasswordUpdateRequest req) {
+		UserDto user = uMapper.findById(userId);
+		
+		if(user == null) throw new IllegalAccessError("해당 사용자를 찾을 수 없습니다");
+		
+		if(!passwordEncoder.matches(req.getCurrentPassword(), user.getPwHash())) throw new IllegalAccessError("현재 비밀번호가 일치하지 않습니다.");
+		
+		if(req.getNewPassword() == null || !req.getNewPassword().equals(req.getNewPasswordConfirm())) throw new IllegalArgumentException("새 비밀번호가 일치하지 않습니다.");
+    
+		if (passwordEncoder.matches(req.getNewPassword(), user.getPwHash())) throw new IllegalArgumentException("이전 비밀번호와 다른 비밀번호를 사용해 주세요.");
+	     
+		String newPwHash = passwordEncoder.encode(req.getNewPassword());
+		
+		int updated = uMapper.updatePassword(userId, newPwHash);
+		
+		if(updated == 0) throw new IllegalStateException("비밀번호 변경 실패");
 	}
 
 }

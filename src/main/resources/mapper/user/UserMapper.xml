@@ -94,5 +94,10 @@
 	    SET deleted_at = NOW()
 	    WHERE user_id = #{userId} AND deleted_at IS NULL
 	</update>
-
+	<update id="updatePassword">
+	    UPDATE users
+	    SET pw_hash = #{pwHash}
+	    WHERE user_id = #{userId}
+	      AND deleted_at IS NULL
+	</update>
 </mapper>

@@ -16,6 +16,7 @@ import com.ssafy.project.api.v1.user.dto.UserDetailResponse;
 import com.ssafy.project.api.v1.user.dto.UserDto;
 import com.ssafy.project.api.v1.user.dto.UserLoginRequest;
 import com.ssafy.project.api.v1.user.dto.UserLoginResponse;
+import com.ssafy.project.api.v1.user.dto.UserPasswordUpdateRequest;
 import com.ssafy.project.api.v1.user.dto.UserSignupRequest;
 import com.ssafy.project.api.v1.user.dto.UserSignupResponse;
 import com.ssafy.project.api.v1.user.dto.UserUpdateRequest;
@@ -59,5 +60,11 @@ public class UserController {
 	public ResponseEntity<?> deleteUser(@PathVariable Long userId){
 		uService.deleteUser(userId);
 		return ResponseEntity.ok(Map.of("message", "탈퇴되었습니다."));
+	}
+	
+	@PatchMapping("/{userId}/password")
+	public ResponseEntity<Map<String, String>> updatePassword(@PathVariable Long userId, @RequestBody UserPasswordUpdateRequest req){
+		uService.updatePassword(userId, req);
+		return ResponseEntity.ok(Map.of("message", "비밀번호가 변경되었습니다."));
 	}
 }

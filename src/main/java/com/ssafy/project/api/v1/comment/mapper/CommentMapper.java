@@ -14,4 +14,6 @@ public interface CommentMapper {
 
 	void createComment(CommentDto dto);
 
+	int updateComment(Long commentId, String content);
+
 }

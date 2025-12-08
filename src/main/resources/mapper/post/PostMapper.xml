@@ -2,13 +2,7 @@
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.ssafy.project.api.v1.post.mapper.PostMapper">
-
-	<insert id="createPost" parameterType="map" useGeneratedKeys="true" keyProperty="dto.postId">
-	    INSERT INTO posts (board_id, user_id, challenge_id, title, content_md)
-	    VALUES (#{dto.boardId}, #{userId}, #{dto.challengeId}, #{dto.title}, #{dto.contentMd})
-	</insert>
-	
+<mapper namespace="com.ssafy.project.api.v1.post.mapper.PostMapper">	
 	<resultMap id="PostMap" type="com.ssafy.project.api.v1.post.dto.PostDto">
 	    <id property="postId" column="post_id"/>
 	    <result property="boardId" column="board_id"/>
@@ -21,5 +15,71 @@
 	    <result property="updatedAt" column="updated_at"/>
 	    <result property="deletedAt" column="deleted_at"/>
 	</resultMap>
+	
+	<resultMap id="PostDetailMap" type="com.ssafy.project.api.v1.post.dto.PostDetailResponse">
+		<id property="postId" column="post_id"/>
+		<result property="boardId" column="board_id"/>
+		<result property="title" column="title" />
+		<result property="content" column="content_md" />
+		<result property="createdAt" column="created_at" />
+		<result property="updatedAt" column="updated_at" />
+		<result property="likeCount" column="likes_count" />
+		
+		<association property="author" javaType="com.ssafy.project.api.v1.post.dto.PostDetailResponse$AuthorInfo">
+			<id property="userId" column="author_id" />
+			<result property="nickname" column="author_nickname" />
+		</association>
+	</resultMap>
 
-</mapper>
+<!--
+	<insert id="createPost" parameterType="map" useGeneratedKeys="true" keyProperty="dto.postId">
+	    INSERT INTO posts (board_id, user_id, challenge_id, title, content_md)
+	    VALUES (#{dto.boardId}, #{userId}, #{dto.challengeId}, #{dto.title}, #{dto.contentMd})
+	</insert>
+  -->	
+  
+	<select id="getPostDetail" resultMap="PostDetailMap">
+		SELECT 
+            p.post_id, p.board_id, p.title, p.content_md,
+            u.user_id AS author_id,
+            u.nickname AS author_nickname,
+            p.created_at, p.updated_at,
+            (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.post_id AND c.deleted_at IS NULL) AS comment_count,
+            p.likes_count
+        FROM posts p
+        JOIN users u ON p.user_id = u.user_id
+        WHERE p.post_id = #{postId} AND p.deleted_at IS NULL
+	</select>
+	
+	<insert id="createPost" parameterType="com.ssafy.project.api.v1.post.dto.PostDto"
+            useGeneratedKeys="true" keyProperty="postId">
+		INSERT INTO posts (board_id, user_id, challenge_id, title, content_md)
+		VALUES ( #{boardId}, #{userId},
+		<choose>
+		    <when test="challengeId != null and challengeId != 0">
+		        #{challengeId}
+		    </when>
+		    <otherwise>
+		        NULL
+		    </otherwise>
+		</choose>,
+		#{title}, #{contentMd})
+	</insert>
+	
+	<update id="updatePost" parameterType="com.ssafy.project.api.v1.post.dto.PostDto">
+		UPDATE posts
+		SET
+			title = #{title},
+			content_md = #{contentMd},
+			updated_at = CURRENT_TIMESTAMP
+		WHERE post_id = #{postId} AND deleted_at IS NULL
+	</update>
+	
+	<update id="deletePost">
+		UPDATE posts
+		SET deleted_at = CURRENT_TIMESTAMP
+		WHERE post_id = #{postId}
+	</update>
+	
+	
+	</mapper>

@@ -46,5 +46,11 @@
    		updated_at = CURRENT_TIMESTAMP
    	WHERE comment_id = #{commentId} AND deleted_at IS NULL
    </update>
+   
+   <update id="deleteComment">
+   UPDATE comments
+   SET deleted_at = NOW()
+   WHERE comment_id = #{commentId} AND deleted_at IS NULL
+   </update>
     
 	</mapper>

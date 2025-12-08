@@ -1,5 +1,6 @@
 package com.ssafy.project.api.v1.comment.service;
 
+import org.apache.ibatis.javassist.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +48,25 @@ public class CommentServiceImpl implements CommentService {
         }
         
 		return dto;
+	}
+
+	@Override
+	public void deleteComment(Long boardId, Long postId, Long commentId, Long userId) throws Exception {
+		CommentDetailResponse comment = commentMapper.getComment(postId, commentId);
+		if (comment == null) {
+	        throw new NotFoundException("존재하지 않는 댓글입니다.");
+	    }
+	    // 2. 작성자 본인인지 체크
+	    if (!comment.getAuthor().getUserId().equals(userId)) {
+//	        throw new UnauthorizedException("댓글 삭제 권한이 없습니다.");
+	        throw new Exception("댓글 삭제 권한이 없습니다.");
+	    }
+	    // 3. Soft Delete 실행
+	    int updated = commentMapper.deleteComment(commentId);
+
+	    if (updated == 0) {
+	        throw new RuntimeException("댓글 삭제에 실패했습니다.");
+	    }
 	}
 
 }

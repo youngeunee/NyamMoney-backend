@@ -1,5 +1,9 @@
 package com.ssafy.project.api.v1.comment.controller;
 
+import org.apache.ibatis.javassist.NotFoundException;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,4 +46,29 @@ public class CommentController {
 												@RequestParam Long userId) {
 		return commentService.updateComment(postId, commentId, req, userId);
 	}
+	
+//	@DeleteMapping("/{commentId}")
+//	public ResponseEntity<Void> deleteComment(@PathVariable Long boardId, @PathVariable Long postId,
+//												@PathVariable Long commentId, @AuthenticationPrincipal String userIdStr) throws NotFoundException, Exception{
+//		Long userId = Long.parseLong(userIdStr);
+//		commentService.deleteComment(boardId, postId, commentId, userId);
+//		return ResponseEntity.noContent().build();
+//	}
+	
+	@DeleteMapping("/{commentId}")
+	public ResponseEntity<Void> deleteComment(
+	        @PathVariable Long boardId,
+	        @PathVariable Long postId,
+	        @PathVariable Long commentId,
+	        @AuthenticationPrincipal String userIdStr) throws Exception {
+
+	    if (userIdStr == null || userIdStr.equals("anonymousUser")) {
+	        return ResponseEntity.status(401).build(); // Unauthorized
+	    }
+
+	    Long userId = Long.parseLong(userIdStr);
+	    commentService.deleteComment(boardId, postId, commentId, userId);
+	    return ResponseEntity.noContent().build();
+	}
+
 }

@@ -99,22 +99,7 @@
 			<artifactId>spring-boot-configuration-processor</artifactId>
 			<optional>true</optional>
 		</dependency>
-	</dependencies>
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.springframework.ai</groupId>
-				<artifactId>spring-ai-bom</artifactId>
-				<version>${spring-ai.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
-			    <groupId>org.springdoc</groupId>
-			    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-			    <version>2.6.0</version>
-			</dependency>
-			<!-- jwt 토큰 발행을 위한 라이브러리 -->
+				<!-- jwt 토큰 발행을 위한 라이브러리 -->
 			<!-- https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-api -->
 			<dependency>
 			    <groupId>io.jsonwebtoken</groupId>
@@ -135,6 +120,23 @@
 			    <version>${jwt-version}</version>
 			    <scope>runtime</scope>
 			</dependency>
+	</dependencies>
+	
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.ai</groupId>
+				<artifactId>spring-ai-bom</artifactId>
+				<version>${spring-ai.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+			    <groupId>org.springdoc</groupId>
+			    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			    <version>2.6.0</version>
+			</dependency>
+
 		</dependencies>
 	</dependencyManagement>
 

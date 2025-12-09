@@ -53,7 +53,10 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/v1/auth/login",
                                 "/api/v1/users/signup",
-                                "/api/v1/auth/refresh")
+                                "/api/v1/auth/refresh",
+                                "/api/v1/users/check-nickname",
+                                "api/v1/users/check-loginid"
+                        		)
                         .permitAll()
 
                         // ✅ 유저 관련 API는 로그인(토큰) 필요

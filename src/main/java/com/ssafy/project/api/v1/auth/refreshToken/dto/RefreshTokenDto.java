@@ -1,4 +1,4 @@
-package com.ssafy.project.api.v1.refreshToken.dto;
+package com.ssafy.project.api.v1.auth.refreshToken.dto;
 
 import java.time.LocalDateTime;
 

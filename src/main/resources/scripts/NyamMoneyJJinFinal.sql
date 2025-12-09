@@ -18,8 +18,8 @@ CREATE TABLE IF NOT EXISTS users (
   profile_visibility ENUM('public', 'protected') NOT NULL DEFAULT 'public',
   share_level        ENUM('none', 'summary', 'detail') NOT NULL DEFAULT 'summary',
   timezone           VARCHAR(40) DEFAULT 'Asia/Seoul',
-  monthly_budget     DECIMAL(12,2) DEFAULT 0,
-  trigger_budget     DECIMAL(12,2) DEFAULT 0,
+  monthly_budget     BIGINT DEFAULT 0,
+  trigger_budget     BIGINT DEFAULT 0,
   created_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at         DATETIME NULL,
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS transactions (
   user_id            BIGINT UNSIGNED NOT NULL,
 
   occurred_at        DATETIME NOT NULL,  -- 거래일시
-  amount             DECIMAL(12,2) NOT NULL,  -- 금액
+  amount             BIGINT NOT NULL,  -- 금액
   tx_type            ENUM('income','expense','transfer') NOT NULL, -- 분류
 
   category_id        BIGINT UNSIGNED NULL,   -- 카테고리
@@ -99,12 +99,12 @@ CREATE TABLE IF NOT EXISTS transactions (
 CREATE TABLE IF NOT EXISTS challenges (
   challenge_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   title        VARCHAR(120) NOT NULL, -- 예: "일주일 5만원"
-  budget_limit DECIMAL(12,2) NOT NULL,
+  budget_limit BIGINT NOT NULL,
   period_days  INT NOT NULL DEFAULT 7,
   starts_at    DATETIME NOT NULL,
   ends_at      DATETIME NOT NULL,
   status       ENUM('UPCOMING','ACTIVE','ENDED','CLOSED') NOT NULL DEFAULT 'UPCOMING',
-  entry_fee    DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  entry_fee    BIGINT NOT NULL DEFAULT 0.00,
   created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (challenge_id)
@@ -129,8 +129,8 @@ CREATE TABLE IF NOT EXISTS challenge_spend_agg (
   spend_id      BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   challenge_id  BIGINT UNSIGNED NOT NULL,
   user_id       BIGINT UNSIGNED NOT NULL,
-  total_spend   DECIMAL(12,2) NOT NULL,
-  impulse_spend DECIMAL(12,2) NOT NULL,
+  total_spend   BIGINT NOT NULL,
+  impulse_spend BIGINT NOT NULL,
   calculated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (spend_id),
   UNIQUE KEY uk_ch_agg   (challenge_id, user_id),
@@ -195,6 +195,7 @@ CREATE TABLE IF NOT EXISTS comments (
   user_id    BIGINT UNSIGNED NOT NULL,
   content_md TEXT NOT NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at DATETIME NULL,
   PRIMARY KEY (comment_id),
   KEY idx_cm_post (post_id),
@@ -210,12 +211,12 @@ CREATE TABLE IF NOT EXISTS user_daily_agg (
   report_id      BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   user_id        BIGINT UNSIGNED NOT NULL,
   day            DATE NOT NULL,
-  total_spend    DECIMAL(12,2) NOT NULL DEFAULT 0,
-  impulse_spend  DECIMAL(12,2) NOT NULL DEFAULT 0,
-  dessert_spend  DECIMAL(12,2) NOT NULL DEFAULT 0,
-  food_spend     DECIMAL(12,2) NOT NULL DEFAULT 0,
-  shopping_spend DECIMAL(12,2) NOT NULL DEFAULT 0,
-  etc_spend      DECIMAL(12,2) NOT NULL DEFAULT 0,
+  total_spend    BIGINT NOT NULL DEFAULT 0,
+  impulse_spend  BIGINT NOT NULL DEFAULT 0,
+  dessert_spend  BIGINT NOT NULL DEFAULT 0,
+  food_spend     BIGINT NOT NULL DEFAULT 0,
+  shopping_spend BIGINT NOT NULL DEFAULT 0,
+  etc_spend      BIGINT NOT NULL DEFAULT 0,
   PRIMARY KEY (report_id),
   UNIQUE KEY uk_udagg_user_day (user_id, day),
   KEY idx_udagg_user (user_id),
@@ -229,7 +230,7 @@ CREATE TABLE IF NOT EXISTS user_monthly_agg (
   user_id       BIGINT UNSIGNED NOT NULL,
   year          INT NOT NULL,
   month         INT NOT NULL,
-  total_spend   DECIMAL(12,2) NOT NULL DEFAULT 0,
+  total_spend   BIGINT NOT NULL DEFAULT 0,
   impulse_ratio DECIMAL(5,2)  NOT NULL DEFAULT 0, -- %
   top_category  VARCHAR(50) NULL,
   summary_json  JSON NULL,
@@ -296,7 +297,7 @@ CREATE TABLE IF NOT EXISTS payments (
   challenge_id BIGINT UNSIGNED NULL,
   provider     VARCHAR(20) NULL,           -- toss/naverpay
   order_id     VARCHAR(64) NULL,
-  amount       DECIMAL(12,2) NOT NULL,
+  amount       BIGINT NOT NULL,
   status       ENUM('PENDING','PAID','CANCELED','REFUNDED','FAILED')
                NOT NULL DEFAULT 'PENDING',
   raw_payload  JSON NULL,

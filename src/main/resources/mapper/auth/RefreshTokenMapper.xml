@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.project.api.v1.auth.refreshToken.mapper.RefreshTokenMapper">
+
+    <insert id="insertRefreshToken"
+            parameterType="com.ssafy.project.api.v1.auth.refreshToken.dto.RefreshTokenDto"
+            useGeneratedKeys="true"
+            keyProperty="tokenId">
+        INSERT INTO refresh_tokens (
+            user_id,
+            token_hash,
+            expires_at
+        ) VALUES (
+            #{userId},
+            #{tokenHash},
+            #{expiresAt}
+        )
+    </insert>
+
+    <delete id="deleteByUserId" parameterType="long">
+        DELETE FROM refresh_tokens
+        WHERE user_id = #{userId}
+    </delete>
+
+    <select id="findByTokenHash"
+            parameterType="string"
+            resultType="com.ssafy.project.api.v1.auth.refreshToken.dto.RefreshTokenDto">
+        SELECT token_id, user_id, token_hash, expires_at, created_at
+        FROM refresh_tokens
+        WHERE token_hash = #{tokenHash}
+    </select>
+
+</mapper>

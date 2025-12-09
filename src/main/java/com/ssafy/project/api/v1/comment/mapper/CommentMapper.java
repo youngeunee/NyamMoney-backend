@@ -1,5 +1,7 @@
 package com.ssafy.project.api.v1.comment.mapper;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -17,5 +19,11 @@ public interface CommentMapper {
 	int updateComment(Long commentId, String content);
 
 	int deleteComment(Long commentId);
+
+	int countComments(Long postId);
+
+	List<CommentDetailResponse> getCommentList(@Param("postId")Long postId,
+			@Param("limit") int size,
+			@Param("offset") int offset);
 
 }

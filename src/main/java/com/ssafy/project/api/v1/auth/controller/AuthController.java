@@ -6,9 +6,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ssafy.project.api.v1.auth.dto.TokenRefreshResponse;
 import com.ssafy.project.api.v1.auth.service.AuthService;
 import com.ssafy.project.api.v1.user.dto.UserLoginRequest;
 import com.ssafy.project.api.v1.user.dto.UserLoginResponse;
@@ -42,12 +44,20 @@ public class AuthController {
 		return ResponseEntity.ok(res);
 	}
 	
+    @PostMapping("/refresh")
+    public ResponseEntity<TokenRefreshResponse> refresh(
+            @RequestHeader("Refresh-Token") String refreshToken) {
+
+        TokenRefreshResponse res = aService.refresh(refreshToken);
+        return ResponseEntity.ok(res);
+    }
+	
 	@Operation(
 		    summary = "로그아웃",
 		    description = "현재 로그인한 사용자의 refresh token을 삭제합니다.",
 		    security = { @SecurityRequirement(name = "bearerAuth") }
 		)
-	@GetMapping("/logout")
+	@PostMapping("/logout")
 	public ResponseEntity<Map<String, String>> logout(HttpServletRequest req ){
 		// access token 추출
 		String header = req.getHeader("Authorization");

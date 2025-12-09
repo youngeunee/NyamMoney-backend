@@ -52,5 +52,27 @@
    SET deleted_at = NOW()
    WHERE comment_id = #{commentId} AND deleted_at IS NULL
    </update>
+   
+   <select id="countComments" resultType="int">
+   	SELECT COUNT(*)
+   	FROM comments
+   	WHERE post_id=#{postId} AND deleted_at IS NULL
+   </select>
+   
+   <select id="getCommentList" resultMap="CommentDetailMap">
+   	SELECT
+   		c.comment_id,
+   		c.post_id,
+   		c.content_md,
+   		c.created_at,
+   		c.updated_at,
+   		u.user_id,
+   		u.nickname
+   	FROM comments c
+   	JOIN users u On c.user_id = u.user_id
+   	WHERE c.post_id = #{postId} AND c.deleted_at IS NULL
+   	ORDER BY c.created_at ASC
+   	LIMIT #{limit} OFFSET #{offset}
+   </select>
     
 	</mapper>

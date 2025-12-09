@@ -1,5 +1,7 @@
 package com.ssafy.project.api.v1.comment.service;
 
+import java.util.List;
+
 import org.apache.ibatis.javassist.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -8,6 +10,7 @@ import com.ssafy.project.api.v1.comment.dto.CommentCreateRequest;
 import com.ssafy.project.api.v1.comment.dto.CommentCreateResponse;
 import com.ssafy.project.api.v1.comment.dto.CommentDetailResponse;
 import com.ssafy.project.api.v1.comment.dto.CommentDto;
+import com.ssafy.project.api.v1.comment.dto.CommentListResponse;
 import com.ssafy.project.api.v1.comment.dto.CommentUpdateRequest;
 import com.ssafy.project.api.v1.comment.mapper.CommentMapper;
 
@@ -67,6 +70,23 @@ public class CommentServiceImpl implements CommentService {
 	    if (updated == 0) {
 	        throw new RuntimeException("댓글 삭제에 실패했습니다.");
 	    }
+	}
+
+	@Override
+	public CommentListResponse getCommentList(Long postId, int page, int size) {
+		int offset=page*size;
+		int totalElements = commentMapper.countComments(postId);
+		List<CommentDetailResponse> list = commentMapper.getCommentList(postId, size, offset);
+		int totalPages = (int) Math.ceil((double) totalElements/size);
+		
+		CommentListResponse rsp = new CommentListResponse();
+		rsp.setContent(list);
+		rsp.setPage(page);
+		rsp.setSize(size);
+		rsp.setTotalElements(totalElements);
+		rsp.setTotalPages(totalPages);
+		
+		return rsp;
 	}
 
 }

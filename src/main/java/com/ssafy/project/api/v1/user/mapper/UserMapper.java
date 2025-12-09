@@ -16,4 +16,5 @@ public interface UserMapper {
 	int updatePassword(@Param("userId") Long userId, @Param("pwHash") String pwHash);
 	// UserDto findByEmail(String email);
     // UserDto findByNickname(String nickname);
+	int countNickname(@Param("nickname") String nickname);
 }

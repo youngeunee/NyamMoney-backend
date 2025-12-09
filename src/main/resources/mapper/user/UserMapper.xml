@@ -100,4 +100,9 @@
 	    WHERE user_id = #{userId}
 	      AND deleted_at IS NULL
 	</update>
+	<select id="countNickname" parameterType="String" resultType="int">
+		SELECT COUNT(*)
+		FROM users
+		WHERE nickname = #{nickname} AND deleted_at IS NULL
+	</select>
 </mapper>

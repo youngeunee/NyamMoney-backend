@@ -1,6 +1,5 @@
 package com.ssafy.project.api.v1.comment.controller;
 
-import org.apache.ibatis.javassist.NotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,11 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ssafy.project.api.v1.comment.dto.CommentCreateRequest;
 import com.ssafy.project.api.v1.comment.dto.CommentCreateResponse;
 import com.ssafy.project.api.v1.comment.dto.CommentDetailResponse;
+import com.ssafy.project.api.v1.comment.dto.CommentListResponse;
 import com.ssafy.project.api.v1.comment.dto.CommentUpdateRequest;
 import com.ssafy.project.api.v1.comment.service.CommentService;
 
 @RestController
-@RequestMapping("/api/boards/{boardId}/posts/{postId}/comments")
+@RequestMapping("/api/v1/boards/{boardId}/posts/{postId}/comments")
 public class CommentController {
 	private final CommentService commentService;
 	public CommentController(CommentService commentService) {
@@ -69,6 +69,13 @@ public class CommentController {
 	    Long userId = Long.parseLong(userIdStr);
 	    commentService.deleteComment(boardId, postId, commentId, userId);
 	    return ResponseEntity.noContent().build();
+	}
+	
+	@GetMapping
+	public CommentListResponse getCommentList(@PathVariable Long postId,
+			@RequestParam(defaultValue="0") int page,
+			@RequestParam(defaultValue="10") int size) {
+		return commentService.getCommentList(postId, page, size);
 	}
 
 }

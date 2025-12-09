@@ -1,6 +1,5 @@
 package com.ssafy.project.api.v1.user.service;
 
-import java.net.Authenticator.RequestorType;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;

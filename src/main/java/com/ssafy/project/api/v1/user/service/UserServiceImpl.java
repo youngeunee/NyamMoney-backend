@@ -217,4 +217,9 @@ public class UserServiceImpl implements UserService {
 		return uMapper.countNickname(nickname) > 0;
 	}
 
+	@Override
+	public boolean checkLoginId(String loginId) {
+		return uMapper.countLoginId(loginId);
+	}
+
 }

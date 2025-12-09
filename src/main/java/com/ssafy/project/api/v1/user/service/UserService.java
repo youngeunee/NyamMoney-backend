@@ -23,4 +23,6 @@ public interface UserService {
     void updatePassword(Long userId, UserPasswordUpdateRequest req);
 
 	boolean checkNickname(String nickname);
+
+	boolean checkLoginId(String loginId);
 }

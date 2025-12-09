@@ -16,6 +16,9 @@ import com.ssafy.project.api.v1.user.service.UserService;
 import com.ssafy.project.security.jwt.JWTUtil;
 
 import io.jsonwebtoken.Claims;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
@@ -39,11 +42,17 @@ public class AuthController {
 		return ResponseEntity.ok(res);
 	}
 	
+	@Operation(
+		    summary = "로그아웃",
+		    description = "현재 로그인한 사용자의 refresh token을 삭제합니다.",
+		    security = { @SecurityRequirement(name = "bearerAuth") }
+		)
 	@GetMapping("/logout")
 	public ResponseEntity<Map<String, String>> logout(HttpServletRequest req ){
 		// access token 추출
 		String header = req.getHeader("Authorization");
 		if(header == null || !header.startsWith("Bearer ")) throw new IllegalAccessError("유효한 access token이 아닙니다.");
+		
 		
 		String accessToken = header.substring(7);
 		

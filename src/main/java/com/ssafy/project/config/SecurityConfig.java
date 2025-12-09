@@ -54,14 +54,16 @@ public class SecurityConfig {
                 // ✅ 회원가입 / 로그인은 토큰 없이 가능
                 .requestMatchers(
                     "/api/v1/auth/login",
-                    "/api/v1/users/signup"
+                    "/api/v1/users/signup",
+                    "/api/v1/auth/refresh"
                 ).permitAll()
 
                 // ✅ 유저 관련 API는 로그인(토큰) 필요
                 .requestMatchers("/api/v1/users/**").authenticated()
-
+                
+                
                 // ✅ 그 외는 일단 전부 허용 (원하면 authenticated()로 바꾸면 됨)
-                .anyRequest().permitAll()
+                .anyRequest().authenticated()
             )
             // 🔹 기본 로그인 기능 비활성화 (JWT만 사용)
             .httpBasic(h -> h.disable())

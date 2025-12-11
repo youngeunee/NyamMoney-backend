@@ -24,6 +24,7 @@
 		<result property="createdAt" column="created_at" />
 		<result property="updatedAt" column="updated_at" />
 		<result property="likeCount" column="likes_count" />
+		<result property="commentCount" column="comment_count" />
 		
 		<association property="author" javaType="com.ssafy.project.api.v1.post.dto.PostDetailResponse$AuthorInfo">
 			<id property="userId" column="author_id" />
@@ -80,6 +81,46 @@
 		SET deleted_at = CURRENT_TIMESTAMP
 		WHERE post_id = #{postId}
 	</update>
+	
+	
+	<!-- 목록 조회 -->
+    <select id="findPostList" resultMap="PostDetailMap">
+        SELECT
+            p.post_id,
+            p.board_id,
+            p.title,
+            p.content_md,
+            p.created_at,
+            p.updated_at,
+            (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.post_id AND c.deleted_at IS NULL) AS comment_count,
+            (SELECT COUNT(*) FROM post_likes pl WHERE pl.post_id = p.post_id) AS like_count,
+            u.user_id,
+            u.nickname
+        FROM posts p
+        JOIN users u ON p.user_id = u.user_id
+        WHERE p.board_id = #{boardId}
+          AND p.deleted_at IS NULL
+        <if test="keyword != null">
+            AND (p.title LIKE CONCAT('%', #{keyword}, '%')
+                OR p.content_md LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        ORDER BY ${sort}
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+	
+	<!-- 전체 개수 -->
+    <select id="countPostList" resultType="long">
+        SELECT COUNT(*)
+        FROM posts p
+        WHERE p.board_id = #{boardId}
+          AND p.deleted_at IS NULL
+        <if test="keyword != null">
+            AND (p.title LIKE CONCAT('%', #{keyword}, '%')
+                OR p.content_md LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+    </select>
+    
+    
 	
 	<!-- 좋아요 관련 -->
 	<update id="increaseLike">

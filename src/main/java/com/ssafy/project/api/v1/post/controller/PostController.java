@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ssafy.project.api.v1.post.dto.PostCreateRequest;
 import com.ssafy.project.api.v1.post.dto.PostCreateResponse;
 import com.ssafy.project.api.v1.post.dto.PostDetailResponse;
+import com.ssafy.project.api.v1.post.dto.PostListResponse;
 import com.ssafy.project.api.v1.post.dto.PostUpdateRequest;
 import com.ssafy.project.api.v1.post.service.PostService;
 
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 
 @RestController
@@ -38,7 +38,7 @@ public class PostController {
 	@PostMapping
 	public PostCreateResponse createPost(@PathVariable Long boardId, 
 			@Valid @RequestBody PostCreateRequest dto,
-			@AuthenticationPrincipal(expression = "uesrId") Long userId) {
+			@AuthenticationPrincipal(expression = "userId") Long userId) {
 		return postService.createPost(boardId, userId, dto);
 	}
 	
@@ -55,6 +55,16 @@ public class PostController {
 		// 로그인 했으면 security에서 userId 꺼내 써도 됨
 		postService.deletePost(boardId, postId, userId);
 		return ResponseEntity.noContent().build(); // 204 반환
+	}
+	
+	@GetMapping
+	public ResponseEntity<PostListResponse> getPosts(@PathVariable Long boardId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) String keyword){
+		PostListResponse response = postService.getPostList(boardId, page, size, sort, keyword);
+        return ResponseEntity.ok(response);
 	}
 
 }

@@ -1,5 +1,7 @@
 package com.ssafy.project.api.v1.post.mapper;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -19,6 +21,14 @@ public interface PostMapper {
 
 	void deletePost(Long postId);
 
+	List<PostDetailResponse> findPostList(@Param("boardId") Long boardId,
+			@Param("offset") int offset,
+			@Param("size") int size,
+			@Param("sort") String sort,
+			@Param("keyword") String keyword);
+	
+	long countPostList(@Param("boardId") Long boardId, @Param("keyword") String keyword);
+	
 	// 좋아요 관련
 	void increaseLike(Long postId);
 
@@ -27,7 +37,6 @@ public interface PostMapper {
 	int getLikesCount(Long postId);
 
 	// 게시글 존재?
-	Integer existsPost(Long boardId, Long postId);
-
+	Integer existsPost(@Param("boardId") Long boardId, @Param("postId") Long postId);
 
 }

@@ -35,4 +35,10 @@ public class UserSignupRequest {
     
     private Long monthlyBudget;
     private Long triggerBudget;
+    
+    @NotBlank
+    private String name;
+    
+    @NotBlank
+    private String phoneNumber;
 }

@@ -31,4 +31,6 @@ public class UserDto {
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
     private Role role;
+    private String name;
+    private String phoneNumber;
 }

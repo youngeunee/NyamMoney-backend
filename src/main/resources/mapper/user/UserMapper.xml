@@ -19,6 +19,9 @@
         <result property="createdAt"         column="created_at" />
         <result property="updatedAt"         column="updated_at" />
         <result property="deletedAt"         column="deleted_at" />
+        <result property="role"				 column="role" />
+        <result property="name" 			 column="name" />
+        <result property="phoneNumber"		 column="phone_number" />
     </resultMap>
 
 
@@ -33,7 +36,9 @@
         pw_hash,
         nickname,
         monthly_budget,
-        trigger_budget
+        trigger_budget,
+        name,
+        phone_number
     )
     VALUES (
         #{loginId},
@@ -41,7 +46,9 @@
         #{pwHash},
         #{nickname},
         #{monthlyBudget},
-        #{triggerBudget}
+        #{triggerBudget},
+        #{name},
+        #{phoneNumber}
     )
 	</insert>
 
@@ -63,30 +70,47 @@
 	</select>
 	
 	<update id="updateUser"
-        	parameterType="com.ssafy.project.api.v1.user.dto.UserDto">
-    	UPDATE users
-    	<set>
-        	<if test="nickname != null">
-            	nickname = #{nickname},
-        	</if>
-	        <if test="email != null">
-	            email = #{email},
-	        </if>
-	        <if test="monthlyBudget != null">
-	            monthly_budget = #{monthlyBudget},
-	        </if>
-	        <if test="triggerBudget != null">
-	            trigger_budget = #{triggerBudget},
-	        </if>
-	        <if test="shareLevel != null">
-    			share_level = #{shareLevel},
-			</if>
-			<if test="profileVisibility != null">
-    			profile_visibility = #{profileVisibility},
-			</if>
+        parameterType="com.ssafy.project.api.v1.user.dto.UserUpdateRequest">
+    UPDATE users
+    <set>
+        <if test="nickname != null">
+            nickname = #{nickname},
+        </if>
 
-	    </set>
-    	WHERE user_id = #{userId} AND deleted_at IS NULL
+        <if test="email != null">
+            email = #{email},
+        </if>
+
+        <if test="monthlyBudget != null">
+            monthly_budget = #{monthlyBudget},
+        </if>
+
+        <if test="triggerBudget != null">
+            trigger_budget = #{triggerBudget},
+        </if>
+
+        <if test="shareLevel != null">
+            share_level = #{shareLevel},
+        </if>
+
+        <if test="profileVisibility != null">
+            profile_visibility = #{profileVisibility},
+        </if>
+
+        <if test="role != null">
+            role = #{role},
+        </if>
+
+        <if test="name != null">
+            name = #{name},
+        </if>
+
+        <if test="phoneNumber != null">
+            phone_number = #{phoneNumber},
+        </if>
+    </set>
+    WHERE user_id = #{userId}
+      AND deleted_at IS NULL
 	</update>
 	
 	<update id="deleteUser" parameterType="long">

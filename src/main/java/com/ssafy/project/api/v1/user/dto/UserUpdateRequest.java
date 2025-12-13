@@ -19,4 +19,6 @@ public class UserUpdateRequest {
     private ProfileVisibility profileVisibility;
     private ShareLevel shareLevel;
     private Role role;
+    private String name;
+    private String phoneNumber;
 }

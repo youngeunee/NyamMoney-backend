@@ -24,4 +24,5 @@ public class UserSignupResponse {
     private ProfileVisibility profileVisibility;
     private ShareLevel shareLevel;
     private Role role;
+    private String name;
 }

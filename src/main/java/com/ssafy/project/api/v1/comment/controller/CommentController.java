@@ -49,8 +49,11 @@ public class CommentController {
 	}
 	
 	@PatchMapping("/{commentId}")
-	public CommentDetailResponse updateComment(@PathVariable Long postId, @PathVariable Long commentId, @RequestBody CommentUpdateRequest req,
-												@RequestParam Long userId) {
+	public CommentDetailResponse updateComment(@PathVariable Long postId, @PathVariable Long commentId, @RequestBody CommentUpdateRequest req) {
+		UserPrincipal principal = (UserPrincipal) SecurityContextHolder.getContext()
+				.getAuthentication()
+				.getPrincipal();
+		Long userId = principal.getUserId();
 		return commentService.updateComment(postId, commentId, req, userId);
 	}
 

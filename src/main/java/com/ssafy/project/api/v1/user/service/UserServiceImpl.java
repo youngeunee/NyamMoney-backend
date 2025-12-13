@@ -117,7 +117,9 @@ public class UserServiceImpl implements UserService {
                 user.getUpdatedAt(),
                 user.getProfileVisibility(),
                 user.getShareLevel(),
-                user.getRole()
+                user.getRole(),
+                user.getName(),
+                user.getPhoneNumber()
         );
 	}
 

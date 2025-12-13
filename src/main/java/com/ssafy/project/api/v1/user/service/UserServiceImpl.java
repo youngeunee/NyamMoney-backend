@@ -45,13 +45,15 @@ public class UserServiceImpl implements UserService {
 		String hashedPw = passwordEncoder.encode(req.getPassword());
 		UserDto user = UserDto.builder()
 		        .loginId(req.getLoginId())
-		        .pwHash(hashedPw) // 비밀번호 해시처리해서 넣기 -> 나중에 추가
+		        .pwHash(hashedPw)
 		        .nickname(req.getNickname())
 		        .email(req.getEmail())
 		        .monthlyBudget(req.getMonthlyBudget())
 		        .triggerBudget(req.getTriggerBudget())
 		        .profileVisibility(req.getProfileVisibility())
 		        .shareLevel(req.getShareLevel())
+		        .name(req.getName())
+		        .phoneNumber(req.getPhoneNumber())
 		        .build();
 		
 		try {

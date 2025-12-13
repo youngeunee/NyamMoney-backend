@@ -11,8 +11,8 @@ public class UserLoginResponse {
 
     private Long userId;
     private String loginId;
-    private Role role;
     private String nickname;
     private String accessToken;
     private String refreshToken;
+    private Role role;
 }

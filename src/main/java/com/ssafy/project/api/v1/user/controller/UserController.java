@@ -45,7 +45,7 @@ public class UserController {
 	public ResponseEntity<UserSignupResponse> signup(@Valid @RequestBody UserSignupRequest req){
 		UserDto user = uService.signup(req);
 		
-		UserSignupResponse res = new UserSignupResponse(user.getUserId(), user.getNickname(), user.getCreatedAt(), user.getProfileVisibility(), user.getShareLevel());
+		UserSignupResponse res = new UserSignupResponse(user.getUserId(), user.getNickname(), user.getCreatedAt(), user.getProfileVisibility(), user.getShareLevel(), user.getRole());
 		
 		return ResponseEntity.ok(res);
 	}

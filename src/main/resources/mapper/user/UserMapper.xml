@@ -128,12 +128,12 @@
 	<select id="countNickname" parameterType="String" resultType="int">
 		SELECT COUNT(*)
 		FROM users
-		WHERE nickname = #{nickname} AND deleted_at IS NULL
+		WHERE nickname = #{nickname}
 	</select>
 	
 	<select id="countLoginId" parameterType="String" resultType="int">
 		SELECT COUNT(*)
 		FROM users
-		WHERE login_id = #{loginId} AND deleted_at IS NULL
+		WHERE login_id = #{loginId}
 	</select>
 </mapper>

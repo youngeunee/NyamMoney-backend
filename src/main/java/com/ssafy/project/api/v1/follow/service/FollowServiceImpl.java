@@ -185,7 +185,15 @@ public class FollowServiceImpl implements FollowService{
 		
 		return new UserListResponse(followings.size(), followings);
 	}
+	
+	@Override
+	@Transactional
+	public UserListResponse getFollowers(Long userId) {
 
+		List<UserDetailResponse> followings = followMapper.selectFollowers(userId);
+		
+		return new UserListResponse(followings.size(), followings);
+	}
 
 
 }

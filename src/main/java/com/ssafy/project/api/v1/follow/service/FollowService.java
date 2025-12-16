@@ -23,4 +23,6 @@ public interface FollowService {
 
 	UserListResponse getFollowings(Long userId);
 
+	UserListResponse getFollowers(Long userId);
+
 }

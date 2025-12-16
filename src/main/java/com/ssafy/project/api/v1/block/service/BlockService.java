@@ -1,6 +1,7 @@
 package com.ssafy.project.api.v1.block.service;
 
 import com.ssafy.project.api.v1.follow.dto.FollowOperationResponse;
+import com.ssafy.project.api.v1.follow.dto.UserListResponse;
 
 public interface BlockService {
 	
@@ -12,5 +13,7 @@ public interface BlockService {
 	FollowOperationResponse block(Long userId, long targetUserId);
 
 	FollowOperationResponse unblock(Long userId, long targetUserId);
+
+	UserListResponse getBlocks(Long userId);
 
 }

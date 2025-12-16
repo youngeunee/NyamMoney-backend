@@ -1,12 +1,16 @@
 package com.ssafy.project.api.v1.block.service;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.ssafy.project.api.v1.follow.dto.FollowOperationResponse;
+import com.ssafy.project.api.v1.follow.dto.UserListResponse;
 import com.ssafy.project.api.v1.follow.mapper.FollowMapper;
+import com.ssafy.project.api.v1.user.dto.UserDetailResponse;
 import com.ssafy.project.api.v1.user.dto.UserDto;
 import com.ssafy.project.api.v1.user.mapper.UserMapper;
 
@@ -54,5 +58,13 @@ public class BlockServiceImpl implements BlockService {
 		
         return new FollowOperationResponse(targetUserId, "UNBLOCKED");
 	}
+	
+	@Override
+	@Transactional
+	public UserListResponse getBlocks(Long userId) {
 
+		List<UserDetailResponse> blocks = followMapper.selectBlocks(userId);
+		
+		return new UserListResponse(blocks.size(), blocks);
+	}
 }

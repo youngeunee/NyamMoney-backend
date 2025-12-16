@@ -97,4 +97,11 @@ public class FollowController {
 	    return ResponseEntity.ok(res);
 	}
 	
+	@GetMapping("/followers")
+	public ResponseEntity<UserListResponse> getFollowers(@AuthenticationPrincipal UserPrincipal principal) {
+	    Long userId = principal.getUserId();
+	    UserListResponse res = followService.getFollowers(userId)
+	    return ResponseEntity.ok(res);
+	}
+	
 }

@@ -93,14 +93,14 @@ public class FollowController {
 	@GetMapping("/followings")
 	public ResponseEntity<UserListResponse> getFollowings(@AuthenticationPrincipal UserPrincipal principal) {
 	    Long userId = principal.getUserId();
-	    UserListResponse res = followService.getFollowings(userId)
+	    UserListResponse res = followService.getFollowings(userId);
 	    return ResponseEntity.ok(res);
 	}
 	
 	@GetMapping("/followers")
 	public ResponseEntity<UserListResponse> getFollowers(@AuthenticationPrincipal UserPrincipal principal) {
 	    Long userId = principal.getUserId();
-	    UserListResponse res = followService.getFollowers(userId)
+	    UserListResponse res = followService.getFollowers(userId);
 	    return ResponseEntity.ok(res);
 	}
 	

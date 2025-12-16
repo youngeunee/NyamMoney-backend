@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,10 +20,11 @@ import com.ssafy.project.api.v1.follow.dto.FollowRequestsResponse;
 import com.ssafy.project.api.v1.follow.service.FollowService;
 import com.ssafy.project.security.auth.UserPrincipal;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/v1/follows")
+@Slf4j
 public class FollowController {
 	private final FollowService followService;
 	
@@ -59,12 +61,19 @@ public class FollowController {
 	
 	// /api/follow/follow-requests/{requestId}
 	@PatchMapping("/follow-requests/{requestId}")
-	public ResponseEntity<FollowRequestApproveResponse> updateFollowRequest(@PathVariable long requestId, @RequestBody FollowRequestApproveRequest req, @AuthenticationPrincipal UserPrincipal principal) {
+	public ResponseEntity<FollowRequestApproveResponse> updateFollowRequest(@RequestBody FollowRequestApproveRequest req, @PathVariable long requestId, @AuthenticationPrincipal UserPrincipal principal) {
 		Long userId = principal.getUserId();
+		
+		log.debug("req = {}", req);
+		log.debug("status = {}", req == null ? null : req.getStatus());
+
 		
 		FollowRequestApproveResponse res = followService.updateFollowRequest(userId, requestId, req.getStatus());
 		
 		return ResponseEntity.ok(res);
 	}
+	
+	
+
 	
 }

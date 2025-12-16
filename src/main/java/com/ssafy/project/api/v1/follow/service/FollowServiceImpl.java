@@ -8,10 +8,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.ssafy.project.api.v1.follow.dto.FollowCreateResponse;
+import com.ssafy.project.api.v1.follow.dto.FollowDto;
 import com.ssafy.project.api.v1.follow.mapper.FollowMapper;
 import com.ssafy.project.domain.follow.model.Status;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class FollowServiceImpl implements FollowService{
 	
 	private final FollowMapper followMapper;
@@ -35,13 +39,16 @@ public class FollowServiceImpl implements FollowService{
 		}
 		
 		Status status;
+		
 		if(visibility.equals("PUBLIC")) status = Status.ACCEPTED;
-		else if(visibility.equals("PRIVATE")) status = Status.PENDING;
+		else if(visibility.equals("PROTECTED")) status = Status.PENDING;
 		else status = Status.REJECTED;
+		
+		log.debug(visibility);
 		
 		followMapper.insertFollow(userId, targetUserId, status);
 		
-		var res = followMapper.selectByPair(userId, targetUserId);
+		FollowDto res = followMapper.selectByPair(userId, targetUserId);
         if (res == null) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "팔로우 요청 생성에 실패했습니다.");
         }

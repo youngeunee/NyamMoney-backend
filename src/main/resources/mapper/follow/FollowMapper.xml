@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.project.api.v1.follow.mapper.FollowMapper">
+
+	<!-- resultMap -->
+    <resultMap id="FollowResultMap" type="com.ssafy.project.api.v1.follow.dto.FollowDto">
+        <id     property="followId"   column="follow_id" />
+        <result property="followerId" column="follower_id" />
+        <result property="followeeId" column="followee_id" />
+        <result property="status"     column="status" />
+        <result property="createdAt"  column="created_at" />
+        <result property="updatedAt"  column="updated_at" />
+    </resultMap>
+
+    <select id="selectProfileVisibility"
+            parameterType="long"
+            resultType="string">
+        SELECT profile_visibility
+        FROM users
+        WHERE user_id = #{targetUserId}
+          AND deleted_at IS NULL
+    </select>
+
+    <insert id="insertFollow">
+        INSERT INTO user_follows (
+            follower_id,
+            followee_id,
+            status
+        )
+        VALUES (
+            #{userId},
+            #{targetUserId},
+            #{status}
+        )
+    </insert>
+
+    <select id="selectByPair"
+            resultMap="FollowResultMap">
+        SELECT
+            follow_id,
+            follower_id,
+            followee_id,
+            status,
+            created_at,
+            updated_at
+        FROM user_follows
+        WHERE follower_id = #{userId}
+          AND followee_id = #{targetUserId}
+        LIMIT 1
+    </select>
+
+</mapper>

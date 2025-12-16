@@ -38,7 +38,8 @@
         monthly_budget,
         trigger_budget,
         name,
-        phone_number
+        phone_number,
+        profile_visibility
     )
     VALUES (
         #{loginId},
@@ -48,7 +49,8 @@
         #{monthlyBudget},
         #{triggerBudget},
         #{name},
-        #{phoneNumber}
+        #{phoneNumber},
+        #{profileVisibility}
     )
 	</insert>
 

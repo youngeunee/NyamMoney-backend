@@ -15,7 +15,9 @@ import com.ssafy.project.api.v1.follow.dto.FollowOperationResponse;
 import com.ssafy.project.api.v1.follow.dto.FollowRequestApproveResponse;
 import com.ssafy.project.api.v1.follow.dto.FollowRequestItem;
 import com.ssafy.project.api.v1.follow.dto.FollowRequestsResponse;
+import com.ssafy.project.api.v1.follow.dto.UserListResponse;
 import com.ssafy.project.api.v1.follow.mapper.FollowMapper;
+import com.ssafy.project.api.v1.user.dto.UserDetailResponse;
 import com.ssafy.project.domain.follow.model.Status;
 
 import lombok.extern.slf4j.Slf4j;
@@ -173,6 +175,15 @@ public class FollowServiceImpl implements FollowService{
 	    }
 
 	    return new FollowOperationResponse(targetUserId, "UNFOLLOWED");
+	}
+
+	@Override
+	@Transactional
+	public UserListResponse getFollowings(Long userId) {
+
+		List<UserDetailResponse> followings = followMapper.selectFollowings(userId);
+		
+		return new UserListResponse(followings.size(), followings);
 	}
 
 

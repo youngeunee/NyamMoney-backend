@@ -41,4 +41,6 @@ public interface FollowMapper {
 
 	void deletePendingOrAccepted(@Param("followerId") long followerId, @Param("followeeId") Long followeeId);
 
+	int deleteBlocked(@Param("userId") Long userId, @Param("targetUserId") long targetUserId);
+
 }

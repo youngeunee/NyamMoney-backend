@@ -23,7 +23,19 @@
 	    <result property="status"    column="status" />
 	    <result property="createdAt" column="created_at" />
 	</resultMap>
-
+	
+	<resultMap id="UserDetailResponseMap"
+           type="com.ssafy.project.api.v1.user.dto.UserDetailResponse">
+	    <id     property="userId"            column="user_id" />
+	    <result property="loginId"           column="login_id" />
+	    <result property="nickname"          column="nickname" />
+	    <result property="email"             column="email" />
+	    <result property="profileVisibility" column="profile_visibility" />
+	    <result property="shareLevel"        column="share_level" />
+	    <result property="createdAt"         column="created_at" />
+	</resultMap>
+	
+	
     <select id="selectProfileVisibility"
             parameterType="long"
             resultType="string">
@@ -123,6 +135,28 @@
 	      AND followee_id = #{targetUserId}
 	      AND status = 'ACCEPTED'
 	</delete>
+	
+	<select id="selectFollowings"
+        parameterType="long"
+        resultMap="UserDetailResponseMap">
+	
+	    SELECT
+	        u.user_id,
+	        u.login_id,
+	        u.nickname,
+	        u.email,
+	        u.profile_visibility,
+	        u.share_level,
+	        u.created_at
+	    FROM user_follows uf
+	    JOIN users u ON u.user_id = uf.followee_id
+	    WHERE uf.follower_id = #{userId}
+	      AND uf.status = 'ACCEPTED'
+	      AND u.deleted_at IS NULL
+	    ORDER BY u.nickname ASC
+	</select>
+
+	
 	
 	<!-- Block -->		
 	<insert id="putBlocked">

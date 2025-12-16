@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.ssafy.project.api.v1.follow.dto.FollowDto;
 import com.ssafy.project.api.v1.follow.dto.FollowRequestItem;
+import com.ssafy.project.api.v1.user.dto.UserDetailResponse;
 import com.ssafy.project.domain.follow.model.Status;
 
 @Mapper
@@ -42,5 +43,7 @@ public interface FollowMapper {
 	void deletePendingOrAccepted(@Param("followerId") long followerId, @Param("followeeId") Long followeeId);
 
 	int deleteBlocked(@Param("userId") Long userId, @Param("targetUserId") long targetUserId);
+	
+	List<UserDetailResponse> selectFollowings(@Param("userId") Long userId);
 
 }

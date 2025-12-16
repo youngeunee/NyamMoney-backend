@@ -19,6 +19,7 @@ import com.ssafy.project.api.v1.follow.dto.FollowOperationResponse;
 import com.ssafy.project.api.v1.follow.dto.FollowRequestApproveRequest;
 import com.ssafy.project.api.v1.follow.dto.FollowRequestApproveResponse;
 import com.ssafy.project.api.v1.follow.dto.FollowRequestsResponse;
+import com.ssafy.project.api.v1.follow.dto.UserListResponse;
 import com.ssafy.project.api.v1.follow.service.FollowService;
 import com.ssafy.project.security.auth.UserPrincipal;
 
@@ -65,11 +66,7 @@ public class FollowController {
 	@PatchMapping("/follow-requests/{requestId}")
 	public ResponseEntity<FollowRequestApproveResponse> updateFollowRequest(@RequestBody FollowRequestApproveRequest req, @PathVariable long requestId, @AuthenticationPrincipal UserPrincipal principal) {
 		Long userId = principal.getUserId();
-		
-		log.debug("req = {}", req);
-		log.debug("status = {}", req == null ? null : req.getStatus());
 
-		
 		FollowRequestApproveResponse res = followService.updateFollowRequest(userId, requestId, req.getStatus());
 		
 		return ResponseEntity.ok(res);
@@ -91,6 +88,13 @@ public class FollowController {
 	    FollowOperationResponse res = followService.unfollow(userId, targetUserId);
 	    return ResponseEntity.ok(res);
 	}
-
+	
+	
+	@GetMapping("/followings")
+	public ResponseEntity<UserListResponse> getFollowings(@AuthenticationPrincipal UserPrincipal principal) {
+	    Long userId = principal.getUserId();
+	    UserListResponse res = followService.getFollowings(userId)
+	    return ResponseEntity.ok(res);
+	}
 	
 }

@@ -109,4 +109,12 @@
         	AND followee_id = #{userId}
          	AND status = 'PENDING'
     </update>
+    
+    <delete id="deletePendingFollowRequest">
+	    DELETE FROM user_follows
+	    WHERE follow_id = #{requestId}
+	    	AND follower_id = #{userId}
+	      	AND status = 'PENDING'
+	</delete>
+
 </mapper>

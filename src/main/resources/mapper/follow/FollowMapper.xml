@@ -94,4 +94,19 @@
 	      AND u.deleted_at IS NULL
 	    ORDER BY uf.created_at DESC
 	</select>
+	
+	<select id="getFollowRequest" resultMap="FollowResultMap">
+	    SELECT *
+	    FROM user_follows
+	    WHERE follow_id = #{requestId}
+	    LIMIT 1
+	</select>
+	
+	<update id="updateFollowRequestStatus">
+        UPDATE user_follows
+        SET status = #{status}
+        WHERE follow_id = #{requestId}
+        	AND followee_id = #{userId}
+         	AND status = 'PENDING'
+    </update>
 </mapper>

@@ -28,4 +28,8 @@ public interface FollowMapper {
 	List<FollowRequestItem> selectIncomingFollowRequests(@Param("userId") Long userId);
 
 	List<FollowRequestItem> selectOutgoingFollowRequests(@Param("userId") Long userId);
+
+	int updateFollowRequestStatus(@Param("requestId") long requestId, @Param("userId") Long userId, @Param("status") Status status);
+
+	FollowDto getFollowRequest(@Param("requestId")long requestId);
 }

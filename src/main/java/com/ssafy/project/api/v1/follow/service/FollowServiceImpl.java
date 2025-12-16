@@ -11,6 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.ssafy.project.api.v1.follow.dto.FollowCreateResponse;
 import com.ssafy.project.api.v1.follow.dto.FollowDto;
+import com.ssafy.project.api.v1.follow.dto.FollowRequestApproveResponse;
 import com.ssafy.project.api.v1.follow.dto.FollowRequestItem;
 import com.ssafy.project.api.v1.follow.dto.FollowRequestsResponse;
 import com.ssafy.project.api.v1.follow.mapper.FollowMapper;
@@ -79,5 +80,57 @@ public class FollowServiceImpl implements FollowService{
 	    List<FollowRequestItem> items = followMapper.selectOutgoingFollowRequests(userId);
 	    return new FollowRequestsResponse("outgoing", items.size(), items);
 	}
+
+	@Override
+	@Transactional
+	public FollowRequestApproveResponse updateFollowRequest(Long userId, long requestId, Status status) {
+
+	    // 400
+	    if (status == null) {
+	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "status 값이 없습니다.");
+	    }
+
+	    if (status != Status.ACCEPTED && status != Status.REJECTED) {
+	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "status는 ACCEPTED 또는 REJECTED만 가능합니다.");
+	    }
+
+	    // 요청 조회
+	    FollowDto follow = followMapper.getFollowRequest(requestId);
+
+	    // 404: 요청 없음
+	    if (follow == null) {
+	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "팔로우 요청이 존재하지 않습니다.");
+	    }
+
+	    // 404: 이미 처리됨
+	    if (follow.getStatus() != Status.PENDING) {
+	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "이미 처리된 팔로우 요청입니다.");
+	    }
+
+	    // 403: 수신자만 처리 가능
+	    if (!follow.getFolloweeId().equals(userId)) {
+	        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 팔로우 요청을 처리할 권한이 없습니다.");
+	    }
+
+	    // 상태 변경 (PENDING인 경우만)
+	    int updated = followMapper.updateFollowRequestStatus(requestId, userId, status);
+
+	    if (updated == 0) {
+	        // 동시성(누가 먼저 처리) 등
+	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "요청이 존재하지 않거나 이미 처리되었습니다.");
+	    }
+
+	    // updatedAt 반영
+	    FollowDto updatedFollow = followMapper.getFollowRequest(requestId);
+
+	    return new FollowRequestApproveResponse(
+	            updatedFollow.getFollowId(),
+	            updatedFollow.getFollowerId(),
+	            updatedFollow.getFolloweeId(),
+	            updatedFollow.getStatus(),
+	            updatedFollow.getUpdatedAt()
+	    );
+	}
+
 
 }

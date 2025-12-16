@@ -1,14 +1,18 @@
 package com.ssafy.project.api.v1.follow.service;
 
+import java.util.List;
 import java.util.Objects;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.ssafy.project.api.v1.follow.dto.FollowCreateResponse;
 import com.ssafy.project.api.v1.follow.dto.FollowDto;
+import com.ssafy.project.api.v1.follow.dto.FollowRequestItem;
+import com.ssafy.project.api.v1.follow.dto.FollowRequestsResponse;
 import com.ssafy.project.api.v1.follow.mapper.FollowMapper;
 import com.ssafy.project.domain.follow.model.Status;
 
@@ -60,6 +64,20 @@ public class FollowServiceImpl implements FollowService{
         		res.getStatus(),
         		res.getCreatedAt()
         );
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public FollowRequestsResponse getIncomingFollowRequests(Long userId) {
+	    List<FollowRequestItem> items = followMapper.selectIncomingFollowRequests(userId);
+	    return new FollowRequestsResponse("incoming", items.size(), items);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public FollowRequestsResponse getOutgoingFollowRequests(Long userId) {
+	    List<FollowRequestItem> items = followMapper.selectOutgoingFollowRequests(userId);
+	    return new FollowRequestsResponse("outgoing", items.size(), items);
 	}
 
 }

@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at         DATETIME NULL,
   role				 ENUM('USER', 'ADMIN') NOT NULL DEFAULT 'USER',
+  name				 VARCHAR(50) NOT NULL,
+  phone_number 		 VARCHAR(20),
   PRIMARY KEY (user_id),
   UNIQUE KEY uk_users_email    (email),
   UNIQUE KEY uk_users_nickname (nickname)
@@ -248,7 +250,7 @@ CREATE TABLE IF NOT EXISTS user_follows (
   follow_id   BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   follower_id BIGINT UNSIGNED NOT NULL,  -- 나 (팔로우 하는 사람)
   followee_id BIGINT UNSIGNED NOT NULL,  -- 상대 (팔로우 대상)
-  status      ENUM('pending', 'accepted', 'rejected', 'blocked') NOT NULL DEFAULT 'pending',
+  status      ENUM('PENDING', 'ACCEPTED', 'REJECTED', 'BLOCKED') NOT NULL DEFAULT 'pending',
   created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (follow_id),

@@ -14,6 +14,15 @@
         <result property="createdAt"  column="created_at" />
         <result property="updatedAt"  column="updated_at" />
     </resultMap>
+    
+    <resultMap id="FollowRequestItemMap"
+           type="com.ssafy.project.api.v1.follow.dto.FollowRequestItem">
+	    <id     property="requestId" column="request_id" />
+	    <result property="userId"    column="user_id" />
+	    <result property="nickname"  column="nickname" />
+	    <result property="status"    column="status" />
+	    <result property="createdAt" column="created_at" />
+	</resultMap>
 
     <select id="selectProfileVisibility"
             parameterType="long"
@@ -51,5 +60,38 @@
           AND followee_id = #{targetUserId}
         LIMIT 1
     </select>
-
+	
+	
+	<select id="selectIncomingFollowRequests"
+        resultMap="FollowRequestItemMap">
+	    SELECT
+	        uf.follow_id   AS request_id,
+	        uf.follower_id AS user_id,
+	        u.nickname     AS nickname,
+	        uf.status      AS status,
+	        uf.created_at  AS created_at
+	    FROM user_follows uf
+	    JOIN users u ON u.user_id = uf.follower_id
+	    WHERE uf.followee_id = #{userId}
+	      AND uf.status = 'PENDING'
+	      AND u.deleted_at IS NULL
+	    ORDER BY uf.created_at DESC
+	</select>
+	
+	
+	<select id="selectOutgoingFollowRequests"
+        resultMap="FollowRequestItemMap">
+	    SELECT
+	        uf.follow_id   AS request_id,
+	        uf.followee_id AS user_id,
+	        u.nickname     AS nickname,
+	        uf.status      AS status,
+	        uf.created_at  AS created_at
+	    FROM user_follows uf
+	    JOIN users u ON u.user_id = uf.followee_id
+	    WHERE uf.follower_id = #{userId}
+	      AND uf.status = 'PENDING'
+	      AND u.deleted_at IS NULL
+	    ORDER BY uf.created_at DESC
+	</select>
 </mapper>

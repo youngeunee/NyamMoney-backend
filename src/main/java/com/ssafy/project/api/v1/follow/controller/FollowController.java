@@ -39,11 +39,11 @@ public class FollowController {
 		Long userId = principal.getUserId();
 		
 		if("incoming".equals(direction)) {
-			return followService.getIncomingFollowRequests(userId);
+			return ResponseEntity.ok(followService.getIncomingFollowRequests(userId));
 		}
 		
 		if("outgoing".equals(direction)) {
-            return followService.getOutgoingFollowRequests(userId);
+            return ResponseEntity.ok(followService.getOutgoingFollowRequests(userId));
 		}
 		
 		throw new ResponseStatusException(

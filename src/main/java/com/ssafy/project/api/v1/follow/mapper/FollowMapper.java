@@ -34,4 +34,7 @@ public interface FollowMapper {
 	FollowDto getFollowRequest(@Param("requestId")long requestId);
 
 	int deletePendingFollowRequest(@Param("requestId") long requestId, @Param("userId") Long userId);
+
+	int deleteAcceptedFollow(@Param("userId") Long userId, @Param("targetUserId") long targetUserId);
+
 }

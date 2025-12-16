@@ -116,5 +116,12 @@
 	    	AND follower_id = #{userId}
 	      	AND status = 'PENDING'
 	</delete>
-
+	
+	<delete id="deleteAcceptedFollow">
+	    DELETE FROM user_follows
+	    WHERE follower_id = #{userId}
+	      AND followee_id = #{targetUserId}
+	      AND status = 'ACCEPTED'
+	</delete>
+		
 </mapper>

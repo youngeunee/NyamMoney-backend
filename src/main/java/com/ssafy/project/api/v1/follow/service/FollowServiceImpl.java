@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.ssafy.project.api.v1.follow.dto.FollowCreateResponse;
 import com.ssafy.project.api.v1.follow.dto.FollowDto;
 import com.ssafy.project.api.v1.follow.dto.FollowRequestApproveResponse;
+import com.ssafy.project.api.v1.follow.dto.FollowRequestCancelResponse;
 import com.ssafy.project.api.v1.follow.dto.FollowRequestItem;
 import com.ssafy.project.api.v1.follow.dto.FollowRequestsResponse;
 import com.ssafy.project.api.v1.follow.mapper.FollowMapper;
@@ -130,6 +131,29 @@ public class FollowServiceImpl implements FollowService{
 	            updatedFollow.getStatus(),
 	            updatedFollow.getUpdatedAt()
 	    );
+	}
+
+	@Override
+	public FollowRequestCancelResponse deleteFollowRequest(Long userId, long requestId) {
+		FollowDto follow = followMapper.getFollowRequest(requestId);
+		
+		if (follow == null) {
+	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "팔로우 요청이 존재하지 않습니다.");
+	    }
+
+	    // 403: 팔로우한 사람만 취소 가능
+	    if (!follow.getFollowerId().equals(userId)) {
+	        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 팔로우 요청을 취소할 권한이 없습니다.");
+	    }
+
+	    // 400: 이미 처리된 요청은 취소 불가
+	    if (follow.getStatus() != Status.PENDING) {
+	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "이미 처리된 팔로우 요청은 취소할 수 없습니다.");
+	    }
+
+	    int deleted = followMapper.deletePendingFollowRequest(requestId, userId); // pending 중만 취소 가능
+		
+	    return new FollowRequestCancelResponse(requestId, "CANCELED");
 	}
 
 

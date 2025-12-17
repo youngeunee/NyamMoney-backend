@@ -17,6 +17,8 @@ public class PostDetailResponse {
 	
 	private AuthorInfo author;
 	
+	private boolean liked;
+	
 	@Data
 	public static class AuthorInfo {
 		private Long userId;

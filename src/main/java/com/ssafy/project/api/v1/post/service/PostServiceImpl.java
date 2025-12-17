@@ -2,6 +2,7 @@ package com.ssafy.project.api.v1.post.service;
 
 import java.util.List;
 
+import org.apache.ibatis.javassist.NotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.ssafy.project.api.v1.post.dto.PostCreateRequest;
@@ -11,19 +12,34 @@ import com.ssafy.project.api.v1.post.dto.PostDto;
 import com.ssafy.project.api.v1.post.dto.PostListResponse;
 import com.ssafy.project.api.v1.post.dto.PostUpdateRequest;
 import com.ssafy.project.api.v1.post.mapper.PostMapper;
+import com.ssafy.project.api.v1.postLike.mapper.PostLikeMapper;
 
 import jakarta.validation.Valid;
 
 @Service
 public class PostServiceImpl implements PostService {
 	private final PostMapper postMapper;
-	public PostServiceImpl(PostMapper postMapper) {
+	private final PostLikeMapper postLikeMapper;
+	public PostServiceImpl(PostMapper postMapper, PostLikeMapper postLikeMapper) {
 		this.postMapper = postMapper;
+		this.postLikeMapper = postLikeMapper;
 	}
 
 	@Override
-	public PostDetailResponse getPostDetail(Long postId) {
-		return postMapper.getPostDetail(postId);
+	public PostDetailResponse getPostDetail(Long boardId, Long postId, Long userId) throws NotFoundException {
+		// 1. 게시글 존재 확인
+	    if (postMapper.existsPost(boardId, postId) == 0) {
+	        throw new NotFoundException("게시글 없음");
+	    }
+
+	    // 2. 게시글 상세 조회 (기존 메서드 그대로 사용)
+	    PostDetailResponse response = postMapper.getPostDetail(postId);
+
+	    // 3. 좋아요 여부 계산
+	    boolean liked = postLikeMapper.existsUserLike(postId, userId) > 0;
+	    response.setLiked(liked);
+
+	    return response;
 	}
 
 	@Override

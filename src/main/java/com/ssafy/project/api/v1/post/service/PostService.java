@@ -1,5 +1,7 @@
 package com.ssafy.project.api.v1.post.service;
 
+import org.apache.ibatis.javassist.NotFoundException;
+
 import com.ssafy.project.api.v1.post.dto.PostCreateRequest;
 import com.ssafy.project.api.v1.post.dto.PostCreateResponse;
 import com.ssafy.project.api.v1.post.dto.PostDetailResponse;
@@ -13,7 +15,7 @@ public interface PostService {
 
 	// Long createPost(PostDto dto, Long userId);
 
-	PostDetailResponse getPostDetail(Long postId);
+	PostDetailResponse getPostDetail(Long boardId, Long postId, Long userId) throws NotFoundException;
 
 	PostCreateResponse createPost(Long boardId, Long userId, @Valid PostCreateRequest dto);
 

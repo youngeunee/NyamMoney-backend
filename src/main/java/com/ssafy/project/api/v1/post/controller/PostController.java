@@ -1,5 +1,6 @@
 package com.ssafy.project.api.v1.post.controller;
 
+import org.apache.ibatis.javassist.NotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -30,8 +31,9 @@ public class PostController {
 	}
 	
 	@GetMapping("/{postId}")
-	public PostDetailResponse getPostDetail(@PathVariable Long postId, @PathVariable Long boardId) {
-		return postService.getPostDetail(postId);
+	public PostDetailResponse getPostDetail(@PathVariable Long postId, @PathVariable Long boardId,
+			@AuthenticationPrincipal(expression = "userId") Long userId) throws NotFoundException {
+		return postService.getPostDetail(boardId, postId, userId);
 		
 	}
 

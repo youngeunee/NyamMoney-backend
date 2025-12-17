@@ -4,5 +4,77 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.ssafy.project.api.v1.transaction.mapper.TranscationMapper">
+	<!-- resultMap -->
+	 <resultMap id="TransactionCreateResponseMap"
+               type="com.ssafy.project.api.v1.transaction.dto.TransactionCreateResponse">
 
+        <id     property="transactionId" column="transaction_id"/>
+        <result property="txType"         column="tx_type"/>
+        <result property="amount"         column="amount"/>
+        <result property="occurredAt"     column="occurred_at"/>
+        <result property="merchantName"   column="merchant_name"/>
+        <result property="memo"           column="memo"/>
+        <result property="isRefund"       column="is_refund"/>
+        <result property="canceledAt"     column="canceled_at"/>
+        <result property="createdAt"      column="created_at"/>
+
+        <association property="category"
+                     javaType="com.ssafy.project.api.v1.category.dto.CategoryItem"
+                     columnPrefix="cat_">
+            <id     property="categoryId" column="category_id"/>
+            <result property="name"       column="name"/>
+        </association>
+    </resultMap>
+    
+    <insert id="insertTransaction"
+            parameterType="com.ssafy.project.api.v1.transaction.dto.TransactionCreateParam"
+            useGeneratedKeys="true"
+            keyProperty="transactionId">
+
+        INSERT INTO transactions (
+            user_id,
+            tx_type,
+            amount,
+            occurred_at,
+            category_id,
+            merchant_name,
+            memo,
+            is_refund,
+            canceled_at
+        ) VALUES (
+            #{userId},
+            #{txType},
+            #{amount},
+            #{occurredAt},
+            #{categoryId},
+            #{merchantName},
+            #{memo},
+            #{isRefund},
+            #{canceledAt}
+        )
+    </insert>
+    
+    <select id="selectCreateResponseById"
+            resultMap="TransactionCreateResponseMap">
+
+        SELECT
+            t.transaction_id,
+            t.tx_type,
+            t.amount,
+            t.occurred_at,
+            t.merchant_name,
+            t.memo,
+            t.is_refund,
+            t.canceled_at,
+            t.created_at,
+
+            c.category_id AS cat_category_id,
+            c.name        AS cat_name
+
+        FROM transactions t
+        JOIN categories c
+          ON c.category_id = t.category_id
+        WHERE t.user_id = #{userId}
+          AND t.transaction_id = #{transactionId}
+    </select>
 </mapper>

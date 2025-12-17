@@ -4,6 +4,7 @@ import com.ssafy.project.api.v1.follow.dto.FollowCreateResponse;
 import com.ssafy.project.api.v1.follow.dto.FollowOperationResponse;
 import com.ssafy.project.api.v1.follow.dto.FollowRequestApproveResponse;
 import com.ssafy.project.api.v1.follow.dto.FollowRequestsResponse;
+import com.ssafy.project.api.v1.follow.dto.FollowStatusResponse;
 import com.ssafy.project.api.v1.follow.dto.UserListResponse;
 import com.ssafy.project.domain.follow.model.Status;
 
@@ -24,5 +25,7 @@ public interface FollowService {
 	UserListResponse getFollowings(Long userId);
 
 	UserListResponse getFollowers(Long userId);
+
+	FollowStatusResponse getFollowStatus(Long userId, long targetUserId);
 
 }

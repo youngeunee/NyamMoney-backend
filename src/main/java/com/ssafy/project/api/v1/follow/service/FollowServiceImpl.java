@@ -15,9 +15,12 @@ import com.ssafy.project.api.v1.follow.dto.FollowOperationResponse;
 import com.ssafy.project.api.v1.follow.dto.FollowRequestApproveResponse;
 import com.ssafy.project.api.v1.follow.dto.FollowRequestItem;
 import com.ssafy.project.api.v1.follow.dto.FollowRequestsResponse;
+import com.ssafy.project.api.v1.follow.dto.FollowStatusResponse;
 import com.ssafy.project.api.v1.follow.dto.UserListResponse;
 import com.ssafy.project.api.v1.follow.mapper.FollowMapper;
 import com.ssafy.project.api.v1.user.dto.UserDetailResponse;
+import com.ssafy.project.api.v1.user.dto.UserDto;
+import com.ssafy.project.api.v1.user.mapper.UserMapper;
 import com.ssafy.project.domain.follow.model.Status;
 
 import lombok.extern.slf4j.Slf4j;
@@ -27,9 +30,11 @@ import lombok.extern.slf4j.Slf4j;
 public class FollowServiceImpl implements FollowService{
 	
 	private final FollowMapper followMapper;
+	private final UserMapper userMapper;
 	
-	public FollowServiceImpl(FollowMapper followMapper) {
+	public FollowServiceImpl(FollowMapper followMapper, UserMapper userMapper) {
 		this.followMapper = followMapper;
+		this.userMapper = userMapper;
 	}
 	
 	@Override
@@ -193,6 +198,65 @@ public class FollowServiceImpl implements FollowService{
 		List<UserDetailResponse> followings = followMapper.selectFollowers(userId);
 		
 		return new UserListResponse(followings.size(), followings);
+	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public FollowStatusResponse getFollowStatus(Long userId, long targetUserId) {
+
+	    // 자기 자신이면 관계 의미 없음
+	    if (userId != null && userId.equals(targetUserId)) {
+	        return FollowStatusResponse.builder()
+	                .status("NONE")
+	                .requestId(null)
+	                .build();
+	    }
+
+	    // 대상 유저 존재 확인
+	    UserDto target = userMapper.findById(targetUserId);
+	    if (target == null) {
+	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다.");
+	    }
+
+	    // 1) 차단
+	    int iBlocked = followMapper.existsBlocked(userId, targetUserId);
+	    int blockedMe = followMapper.existsBlocked(targetUserId, userId);
+
+	    if (iBlocked > 0 || blockedMe > 0) {
+	        return FollowStatusResponse.builder()
+	                .status("BLOCKED")
+	                .requestId(null)
+	                .build();
+	    }
+
+	    // 2) 내 -> 상대 관계 조회
+	    FollowDto rel = followMapper.selectByPair(userId, targetUserId);
+	    if (rel == null) {
+	        return FollowStatusResponse.builder()
+	                .status("NONE")
+	                .requestId(null)
+	                .build();
+	    }
+
+	    // 3) enum to string 
+	    if (rel.getStatus() == Status.PENDING) {
+	        return FollowStatusResponse.builder()
+	                .status("PENDING")
+	                .requestId(rel.getFollowId())
+	                .build();
+	    }
+	    if (rel.getStatus() == Status.ACCEPTED) {
+	        return FollowStatusResponse.builder()
+	                .status("ACCEPTED")
+	                .requestId(null)
+	                .build();
+	    }
+
+	    // REJECTED 등은 NONE 처리
+	    return FollowStatusResponse.builder()
+	            .status("NONE")
+	            .requestId(null)
+	            .build();
 	}
 
 

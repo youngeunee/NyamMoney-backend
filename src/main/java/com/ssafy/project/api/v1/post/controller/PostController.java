@@ -52,8 +52,7 @@ public class PostController {
 	
 	@DeleteMapping("/{postId}")
 	public ResponseEntity<Void> deletePost(@PathVariable Long boardId, @PathVariable Long postId,
-			@RequestParam Long userId){ 
-		// 로그인 했으면 security에서 userId 꺼내 써도 됨
+			@AuthenticationPrincipal(expression = "userId") Long userId){ 
 		postService.deletePost(boardId, postId, userId);
 		return ResponseEntity.noContent().build(); // 204 반환
 	}

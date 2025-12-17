@@ -282,8 +282,10 @@ public class UserServiceImpl implements UserService {
 	            UserPostItem last = rows.get(rows.size() - 1);
 	            nextCursor = CursorUtil.format(last.getCreatedAt(), last.getPostId());
 	        }
+	        
+	        long totalCount = uMapper.countUserPosts(userId);
+	        return new CursorPage<>(rows, nextCursor, hasNext, totalCount);
 
-	        return new CursorPage<>(rows, nextCursor, hasNext);
 	    }
 
 }

@@ -30,4 +30,5 @@ public interface UserMapper {
             @Param("limit") int limit
     )
 	
-;}
+;
+	long countUserPosts(@Param("userId") Long userId);}

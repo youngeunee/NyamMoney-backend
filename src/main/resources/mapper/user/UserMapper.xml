@@ -182,4 +182,11 @@
 	    ORDER BY p.created_at DESC, p.post_id DESC
 	    LIMIT #{limit}
 	  </select>
+	  <select id="countUserPosts" resultType="long">
+	  	SELECT COUNT(*)
+		FROM posts p
+		WHERE p.deleted_at IS NULL
+		AND p.user_id = #{userId}
+	  </select>
+	  
 </mapper>

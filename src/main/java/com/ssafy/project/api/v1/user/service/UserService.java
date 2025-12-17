@@ -5,9 +5,12 @@ import com.ssafy.project.api.v1.user.dto.UserDto;
 import com.ssafy.project.api.v1.user.dto.UserLoginRequest;
 import com.ssafy.project.api.v1.user.dto.UserLoginResponse;
 import com.ssafy.project.api.v1.user.dto.UserPasswordUpdateRequest;
+import com.ssafy.project.api.v1.user.dto.UserPostCursorRequest;
+import com.ssafy.project.api.v1.user.dto.UserPostItem;
 import com.ssafy.project.api.v1.user.dto.UserSignupRequest;
 import com.ssafy.project.api.v1.user.dto.UserUpdateRequest;
 import com.ssafy.project.api.v1.user.dto.UserUpdateResponse;
+import com.ssafy.project.common.dto.CursorPage;
 
 public interface UserService {
 	UserDto signup(UserSignupRequest req);
@@ -25,4 +28,6 @@ public interface UserService {
 	boolean checkNickname(String nickname);
 
 	boolean checkLoginId(String loginId);
+
+	CursorPage<UserPostItem> getUserPosts(Long userId, UserPostCursorRequest request);
 }

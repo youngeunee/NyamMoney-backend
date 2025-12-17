@@ -3,6 +3,7 @@ package com.ssafy.project.api.v1.user.service;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,10 +16,15 @@ import com.ssafy.project.api.v1.user.dto.UserDto;
 import com.ssafy.project.api.v1.user.dto.UserLoginRequest;
 import com.ssafy.project.api.v1.user.dto.UserLoginResponse;
 import com.ssafy.project.api.v1.user.dto.UserPasswordUpdateRequest;
+import com.ssafy.project.api.v1.user.dto.UserPostCursorRequest;
+import com.ssafy.project.api.v1.user.dto.UserPostItem;
 import com.ssafy.project.api.v1.user.dto.UserSignupRequest;
 import com.ssafy.project.api.v1.user.dto.UserUpdateRequest;
 import com.ssafy.project.api.v1.user.dto.UserUpdateResponse;
 import com.ssafy.project.api.v1.user.mapper.UserMapper;
+import com.ssafy.project.common.dto.CursorPage;
+import com.ssafy.project.common.util.CursorUtil;
+import com.ssafy.project.common.util.PostExcerptUtil;
 import com.ssafy.project.security.jwt.JWTUtil;
 
 @Service
@@ -27,6 +33,9 @@ public class UserServiceImpl implements UserService {
 	private final PasswordEncoder passwordEncoder;
 	private final JWTUtil jwtUtil;
 	private final RefreshTokenMapper rMapper;
+	
+	private static final int DEFAULT_SIZE = 10;
+    private static final int MAX_SIZE = 50;
 	
 	public UserServiceImpl(UserMapper uMapper, PasswordEncoder passwordEncoder, JWTUtil jwtUtil, RefreshTokenMapper rMapper) {
 		this.uMapper = uMapper;
@@ -231,5 +240,50 @@ public class UserServiceImpl implements UserService {
 	public boolean checkLoginId(String loginId) {
 		return uMapper.countLoginId(loginId) > 0;
 	}
+	
+	 public CursorPage<UserPostItem> getUserPosts(Long userId, UserPostCursorRequest req) {
+
+	        // 1) size 결정 (안 들어오면 기본값)
+	        int size = req.getSize() == null ? DEFAULT_SIZE : req.getSize();
+	        if (size < 1) size = DEFAULT_SIZE;
+	        if (size > MAX_SIZE) size = MAX_SIZE;
+
+	        // 2) cursor 파싱 (없으면 null)
+	        LocalDateTime cursorCreatedAt = null;
+	        Long cursorPostId = null;
+
+	        if (req.getCursor() != null && !req.getCursor().isBlank()) {
+	            CursorUtil.Cursor c = CursorUtil.parse(req.getCursor());
+	            cursorCreatedAt = c.createdAt();
+	            cursorPostId = c.postId();
+	        }
+
+	        // 3) size + 1 로 조회해서 hasNext 판단
+	        List<UserPostItem> rows = uMapper.selectUserPostsCursor(
+	                userId,
+	                cursorCreatedAt,
+	                cursorPostId,
+	                size + 1
+	        );
+
+	        boolean hasNext = rows.size() > size;
+	        if (hasNext) rows = rows.subList(0, size);
+
+	        // 4) excerpt 생성 (목록용)
+	        for (UserPostItem item : rows) {
+	            String raw = item.getRawContent();
+	            item.setExcerpt(PostExcerptUtil.makeExcerpt(raw));
+	            item.setRawContent(null); // 제거
+	        }
+
+	        // 5) nextCursor 계산 (마지막 요소 기준)
+	        String nextCursor = null;
+	        if (hasNext && !rows.isEmpty()) {
+	            UserPostItem last = rows.get(rows.size() - 1);
+	            nextCursor = CursorUtil.format(last.getCreatedAt(), last.getPostId());
+	        }
+
+	        return new CursorPage<>(rows, nextCursor, hasNext);
+	    }
 
 }

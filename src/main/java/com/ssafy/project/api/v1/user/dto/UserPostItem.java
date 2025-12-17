@@ -22,7 +22,8 @@ public class UserPostItem {
 
     private String title;
     private String excerpt;      // 한두 줄 미리보기
-
+    private String rawContent; // 원문
+    
     private LocalDateTime createdAt;
 
     private Integer likeCount;

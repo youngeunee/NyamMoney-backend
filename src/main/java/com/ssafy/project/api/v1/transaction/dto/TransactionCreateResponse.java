@@ -9,11 +9,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @AllArgsConstructor
-@Builder
 @NoArgsConstructor
+@Setter
 public class TransactionCreateResponse {
 	private Long transactionId;
 

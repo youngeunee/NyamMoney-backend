@@ -109,7 +109,10 @@ public class UserController {
 	
 	@GetMapping("/{userId}/posts")
 	public ResponseEntity<CursorPage<UserPostItem>> getUserPosts(@PathVariable Long userId, @ModelAttribute UserPostCursorRequest request) {
-	    return ResponseEntity.ok(uService.getUserPosts(userId, request));
+		
+		CursorPage<UserPostItem> res = uService.getUserPosts(userId, request);
+		
+		return ResponseEntity.ok(res);
 	}
 
 }

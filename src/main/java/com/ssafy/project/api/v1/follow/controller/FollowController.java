@@ -19,6 +19,7 @@ import com.ssafy.project.api.v1.follow.dto.FollowOperationResponse;
 import com.ssafy.project.api.v1.follow.dto.FollowRequestApproveRequest;
 import com.ssafy.project.api.v1.follow.dto.FollowRequestApproveResponse;
 import com.ssafy.project.api.v1.follow.dto.FollowRequestsResponse;
+import com.ssafy.project.api.v1.follow.dto.FollowStatusResponse;
 import com.ssafy.project.api.v1.follow.dto.UserListResponse;
 import com.ssafy.project.api.v1.follow.service.FollowService;
 import com.ssafy.project.security.auth.UserPrincipal;
@@ -104,4 +105,10 @@ public class FollowController {
 	    return ResponseEntity.ok(res);
 	}
 	
+	@GetMapping("/{targetUserId}/status")
+	public ResponseEntity<FollowStatusResponse> getFollowStatus(@PathVariable long targetUserId, @AuthenticationPrincipal UserPrincipal principal) {
+	    Long userId = principal.getUserId();
+	    FollowStatusResponse res = followService.getFollowStatus(userId, targetUserId);
+	    return ResponseEntity.ok(res);
+	}
 }

@@ -54,7 +54,7 @@ public class PostController {
 	
 	@DeleteMapping("/{postId}")
 	public ResponseEntity<Void> deletePost(@PathVariable Long boardId, @PathVariable Long postId,
-			@AuthenticationPrincipal(expression = "userId") Long userId){ 
+			@AuthenticationPrincipal(expression = "userId") Long userId) throws NotFoundException{ 
 		postService.deletePost(boardId, postId, userId);
 		return ResponseEntity.noContent().build(); // 204 반환
 	}

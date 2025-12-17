@@ -21,7 +21,7 @@ public interface PostService {
 
 	PostDetailResponse updatePost(Long postId, Long userId, @Valid PostUpdateRequest req);
 
-	void deletePost(Long boardId, Long postId, Long userId);
+	void deletePost(Long boardId, Long postId, Long userId) throws NotFoundException;
 
 	PostListResponse getPostList(Long boardId, int page, int size, String sort, String keyword);
 

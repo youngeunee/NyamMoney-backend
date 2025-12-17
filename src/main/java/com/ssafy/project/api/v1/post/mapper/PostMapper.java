@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import com.ssafy.project.api.v1.post.dto.Post;
 import com.ssafy.project.api.v1.post.dto.PostDetailResponse;
 import com.ssafy.project.api.v1.post.dto.PostDto;
 
@@ -38,5 +39,7 @@ public interface PostMapper {
 
 	// 게시글 존재?
 	Integer existsPost(@Param("boardId") Long boardId, @Param("postId") Long postId);
+
+	Post findById(Long postId);
 
 }

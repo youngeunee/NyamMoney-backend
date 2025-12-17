@@ -31,13 +31,6 @@
 			<result property="nickname" column="author_nickname" />
 		</association>
 	</resultMap>
-
-<!--
-	<insert id="createPost" parameterType="map" useGeneratedKeys="true" keyProperty="dto.postId">
-	    INSERT INTO posts (board_id, user_id, challenge_id, title, content_md)
-	    VALUES (#{dto.boardId}, #{userId}, #{dto.challengeId}, #{dto.title}, #{dto.contentMd})
-	</insert>
-  -->	
   
 	<select id="getPostDetail" resultMap="PostDetailMap">
 		SELECT 
@@ -119,6 +112,16 @@
                 OR p.content_md LIKE CONCAT('%', #{keyword}, '%'))
         </if>
     </select>
+    
+    <select id="findById" parameterType="long" resultType="com.ssafy.project.api.v1.post.dto.Post">
+	  SELECT
+	    post_id     AS postId,
+	    user_id     AS userId,
+	    deleted_at  AS deletedAt
+	  FROM posts
+	  WHERE post_id = #{postId}
+	</select>
+    
     
     
 	

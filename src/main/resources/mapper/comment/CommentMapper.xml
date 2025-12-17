@@ -53,6 +53,15 @@
    WHERE comment_id = #{commentId} AND deleted_at IS NULL
    </update>
    
+   <!-- 게시글 삭제시 댓글도 함께 삭제 -->
+   <update id="softDeleteByPostId">
+	  UPDATE comments
+	  SET deleted_at = NOW()
+	  WHERE post_id = #{postId}
+	    AND deleted_at IS NULL
+	</update>
+   
+   
    <select id="countComments" resultType="int">
    	SELECT COUNT(*)
    	FROM comments

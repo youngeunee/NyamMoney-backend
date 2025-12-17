@@ -4,7 +4,10 @@ import java.util.List;
 
 import org.apache.ibatis.javassist.NotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.ssafy.project.api.v1.comment.mapper.CommentMapper;
+import com.ssafy.project.api.v1.post.dto.Post;
 import com.ssafy.project.api.v1.post.dto.PostCreateRequest;
 import com.ssafy.project.api.v1.post.dto.PostCreateResponse;
 import com.ssafy.project.api.v1.post.dto.PostDetailResponse;
@@ -20,9 +23,11 @@ import jakarta.validation.Valid;
 public class PostServiceImpl implements PostService {
 	private final PostMapper postMapper;
 	private final PostLikeMapper postLikeMapper;
-	public PostServiceImpl(PostMapper postMapper, PostLikeMapper postLikeMapper) {
+	private final CommentMapper commentMapper;
+	public PostServiceImpl(PostMapper postMapper, PostLikeMapper postLikeMapper, CommentMapper commentMapper) {
 		this.postMapper = postMapper;
 		this.postLikeMapper = postLikeMapper;
+		this.commentMapper = commentMapper;
 	}
 
 	@Override
@@ -69,9 +74,17 @@ public class PostServiceImpl implements PostService {
 		return postMapper.getPostDetail(postId);
 	}
 
+	@Transactional
 	@Override
-	public void deletePost(Long boardId, Long postId, Long userId) {
-		// 본인 글인지 or 관리자 권한 체크하려면 로직 추가 가능
+	public void deletePost(Long boardId, Long postId, Long userId) throws NotFoundException {
+		// 게시글 존재 + 권한 검증
+	    Post post = postMapper.findById(postId);
+	    if (post == null || post.getDeletedAt() != null) {
+	        throw new NotFoundException("게시글 없음");
+	    }
+	    // 댓글 소프트 삭제
+	    commentMapper.softDeleteByPostId(postId);
+	    // 게시글 소프트 삭제
 		postMapper.deletePost(postId);
 	}
 

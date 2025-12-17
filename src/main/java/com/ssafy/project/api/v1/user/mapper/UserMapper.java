@@ -1,9 +1,13 @@
 package com.ssafy.project.api.v1.user.mapper;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.ssafy.project.api.v1.user.dto.UserDto;
+import com.ssafy.project.api.v1.user.dto.UserPostItem;
 
 @Mapper
 public interface UserMapper {
@@ -18,4 +22,12 @@ public interface UserMapper {
     // UserDto findByNickname(String nickname);
 	int countNickname(@Param("nickname") String nickname);
 	int countLoginId(@Param("loginId") String loginId);
-}
+	
+	List<UserPostItem> selectUserPostsCursor(
+            @Param("userId") Long userId,
+            @Param("cursorCreatedAt") LocalDateTime cursorCreatedAt,
+            @Param("cursorPostId") Long cursorPostId,
+            @Param("limit") int limit
+    )
+	
+;}

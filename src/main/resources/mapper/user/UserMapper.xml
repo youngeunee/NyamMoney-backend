@@ -24,7 +24,18 @@
         <result property="phoneNumber"		 column="phone_number" />
     </resultMap>
 
-
+	<!-- UserPostItem resultMap -->
+	<resultMap id="UserPostItemMap" type="com.ssafy.project.api.v1.user.dto.UserPostItem">
+		<id     property="postId"        column="post_id"/>
+	    <result property="boardId"       column="board_id"/>
+	    <result property="boardName"     column="board_name"/>
+	    <result property="title"         column="title"/>
+	    <result property="rawContent"    column="content_md"/>
+	    <result property="createdAt"     column="created_at"/>
+	    <result property="likeCount"     column="likes_count"/>
+	    <result property="commentCount"  column="comment_count"/>
+	 </resultMap>
+		
     <insert id="insertUser"
         parameterType="com.ssafy.project.api.v1.user.dto.UserDto"
         useGeneratedKeys="true"
@@ -138,4 +149,37 @@
 		FROM users
 		WHERE login_id = #{loginId}
 	</select>
+	
+	<select id="selectUserPostsCursor" resultMap="UserPostItemMap">
+	    SELECT
+	      p.post_id,
+	      p.board_id,
+	      b.name AS board_name,
+	      p.title,
+	      p.content_md,
+	      p.created_at,
+	      p.likes_count,
+	      COALESCE(c.comment_count, 0) AS comment_count
+	    FROM posts p
+	    JOIN boards b ON b.board_id = p.board_id
+	    LEFT JOIN (
+	      SELECT post_id, COUNT(*) AS comment_count
+	      FROM comments
+	      WHERE deleted_at IS NULL
+	      GROUP BY post_id
+	    ) c ON c.post_id = p.post_id
+	    WHERE p.deleted_at IS NULL
+	      AND p.user_id = #{userId}
+	
+	      <!-- cursor가 있을 때만 적용 -->
+	      <if test="cursorCreatedAt != null and cursorPostId != null">
+	        AND (
+	          p.created_at &lt; #{cursorCreatedAt}
+	          OR (p.created_at = #{cursorCreatedAt} AND p.post_id &lt; #{cursorPostId})
+	        )
+	      </if>
+	
+	    ORDER BY p.created_at DESC, p.post_id DESC
+	    LIMIT #{limit}
+	  </select>
 </mapper>

@@ -13,6 +13,7 @@
             DATE_FORMAT(c.starts_at, '%Y-%m-%d') AS startDate,
             DATE_FORMAT(c.ends_at, '%Y-%m-%d')   AS endDate
         FROM challenges c
+        WHERE c.status != 'CLOSED'
         ORDER BY c.starts_at DESC
     </select>
     
@@ -35,13 +36,19 @@
 
     <update id="updateChallenge">
         UPDATE challenges
-        SET
-            title       = #{title},
+        SET title = #{title},
             description = #{description},
-            starts_at   = #{startDate},
-            ends_at     = #{endDate},
+            starts_at = #{startDate},
+            ends_at = #{endDate},
             period_days = #{periodDays},
-            updated_at  = CURRENT_TIMESTAMP
+            updated_at = CURRENT_TIMESTAMP
+        WHERE challenge_id = #{challengeId}
+    </update>
+    
+    <update id="softDeleteChallenge">
+        UPDATE challenges
+        SET status = 'CLOSED',
+            updated_at = CURRENT_TIMESTAMP
         WHERE challenge_id = #{challengeId}
     </update>
     

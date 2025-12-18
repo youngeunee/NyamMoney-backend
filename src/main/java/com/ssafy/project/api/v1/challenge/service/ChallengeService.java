@@ -15,4 +15,6 @@ public interface ChallengeService {
 
 	void updateChallenge(Long challengeId, @Valid ChallengeUpdateRequest request);
 
+	void deleteChallenge(Long challengeId);
+
 }

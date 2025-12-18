@@ -23,4 +23,6 @@ public interface ChallengeMapper {
 
 	void updateChallenge(ChallengeUpdateParam param);
 
+	int softDeleteChallenge(Long challengeId);
+
 }

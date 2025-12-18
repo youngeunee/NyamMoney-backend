@@ -88,4 +88,29 @@ public class ChallengeServiceImpl implements ChallengeService {
         challengeMapper.updateChallenge(param);
 	}
 
+	@Override
+	public void deleteChallenge(Long challengeId) {
+		// 상태 검증
+        ChallengeStatus status = challengeMapper.selectStatus(challengeId);
+        if (status == null) {
+            throw new IllegalArgumentException("존재하지 않는 챌린지입니다.");
+        }
+
+        if (status != ChallengeStatus.UPCOMING) {
+            throw new IllegalStateException("이미 시작되었거나 종료된 챌린지는 삭제할 수 없습니다.");
+        }
+
+        // 시간 검증
+        LocalDateTime startsAt = challengeMapper.selectStartsAt(challengeId);
+        if (!LocalDateTime.now().isBefore(startsAt)) {
+            throw new IllegalStateException("이미 시작되었거나 종료된 챌린지는 삭제할 수 없습니다.");
+        }
+
+        // 3소프트 삭제
+        int updated = challengeMapper.softDeleteChallenge(challengeId);
+        if (updated == 0) {
+            throw new IllegalArgumentException("챌린지 삭제에 실패했습니다.");
+        }
+	}
+
 }

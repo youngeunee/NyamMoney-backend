@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.project.api.v1.challenge.mapper.ChallengeMapper">
+
+    <select id="selectChallengeList"
+            resultType="com.ssafy.project.api.v1.challenge.dto.ChallengeListItem">
+        SELECT
+            c.challenge_id AS challengeId,
+            c.title,
+            c.description,
+            DATE_FORMAT(c.starts_at, '%Y-%m-%d') AS startDate,
+            DATE_FORMAT(c.ends_at, '%Y-%m-%d')   AS endDate
+        FROM challenges c
+        ORDER BY c.starts_at DESC
+
+    </select>
+    
+</mapper>

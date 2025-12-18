@@ -14,7 +14,11 @@
             DATE_FORMAT(c.ends_at, '%Y-%m-%d')   AS endDate
         FROM challenges c
         ORDER BY c.starts_at DESC
-
     </select>
+    
+    <insert id="insertChallenge" useGeneratedKeys="true" keyProperty="challengeId">
+	  INSERT INTO challenges (title, description, budget_limit, period_days, starts_at, ends_at, status)
+	  VALUES (#{title}, #{description}, #{budgetLimit}, #{periodDays}, #{startDate}, #{endDate}, 'UPCOMING')
+	</insert>
     
 </mapper>

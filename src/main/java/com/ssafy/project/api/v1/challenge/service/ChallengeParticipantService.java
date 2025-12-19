@@ -8,5 +8,6 @@ public interface ChallengeParticipantService {
 	MyChallengeListResponse getMyChallenges(Long userId);
 
 	ChallengeJoinResponse joinChallenge(Long challengeId, Long userId);
+	void cancelChallengeJoin(Long challengeId, Long userId);
 
 }

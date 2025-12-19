@@ -1,5 +1,6 @@
 package com.ssafy.project.api.v1.challenge.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -10,6 +11,7 @@ import com.ssafy.project.api.v1.challenge.dto.participant.MyChallengeListRespons
 import com.ssafy.project.api.v1.challenge.mapper.ChallengeMapper;
 import com.ssafy.project.api.v1.challenge.mapper.ChallengeParticipantMapper;
 import com.ssafy.project.domain.challenge.model.ChallengeStatus;
+import com.ssafy.project.domain.challengeParticipant.ChallengeParticipantStatus;
 
 @Service
 public class ChallengeParticipantServiceImpl implements ChallengeParticipantService {
@@ -50,5 +52,31 @@ public class ChallengeParticipantServiceImpl implements ChallengeParticipantServ
         // 응답 생성
         return new ChallengeJoinResponse(challengeId, userId, "JOINED", 0.0);
 	}
+	
+	@Override
+	public void cancelChallengeJoin(Long challengeId, Long userId) {
+		 // 참여한 사용자인지 확인
+	    int participantCount = pMapper.existsParticipant(challengeId, userId);
+	    if (participantCount == 0) {
+	        throw new IllegalArgumentException("이 챌린지에 참여하지 않은 사용자입니다.");
+	    }
+	    
+	    // 챌린지 상태 확인
+        ChallengeStatus status = cMapper.selectStatus(challengeId);
+        if (status == ChallengeStatus.ENDED) {
+            throw new IllegalStateException("종료된 챌린지에서는 참여 취소가 불가능합니다.");
+        }
 
+        // 챌린지 시작일 확인
+        LocalDateTime startsAt = cMapper.selectStartsAt(challengeId);
+
+        // 시작 전 취소: REFUNDED로 상태 변경
+        if (startsAt.isAfter(LocalDateTime.now())) {
+            pMapper.updateParticipantStatus(challengeId, userId, ChallengeParticipantStatus.REFUNDED);
+        }
+        // 시작 후 취소: FAILED로 상태 변경
+        else {
+        	pMapper.updateParticipantStatus(challengeId, userId, ChallengeParticipantStatus.FAILED);
+        }
+	}
 }

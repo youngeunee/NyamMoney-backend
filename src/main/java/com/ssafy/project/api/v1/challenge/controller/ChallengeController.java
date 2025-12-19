@@ -78,5 +78,12 @@ public class ChallengeController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 	
+	@DeleteMapping("/{challengeId}/join")
+	public ResponseEntity<Void> cancelChallengeJoin(@PathVariable Long challengeId,
+            @AuthenticationPrincipal UserPrincipal user) {
+		Long userId = user.getUserId();
+		pService.cancelChallengeJoin(challengeId, userId);
+		return ResponseEntity.noContent().build();  // 204 No Content
+	}
 
 }

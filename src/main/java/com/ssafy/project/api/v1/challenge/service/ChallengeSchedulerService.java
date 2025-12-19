@@ -32,7 +32,7 @@ public class ChallengeSchedulerService {
         // 종료된 챌린지에 대한 참여자 상태를 COMPLETED로 업데이트
         for (Long challengeId : expiredChallengeIds) {
             // 참여자 상태 변경
-            pMapper.updateParticipantStatus(challengeId, ChallengeParticipantStatus.COMPLETED);
+            pMapper.updateParticipantStatusByDelete(challengeId, ChallengeParticipantStatus.COMPLETED);
         }
         // 챌린지 상태 변경
         cMapper.updateChallengeStatusByDate(now);

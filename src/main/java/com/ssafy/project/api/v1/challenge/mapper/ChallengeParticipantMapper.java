@@ -16,6 +16,9 @@ public interface ChallengeParticipantMapper {
 
 	void insertParticipant(Long challengeId, Long userId);
 
-	void updateParticipantStatus(Long challengeId, ChallengeParticipantStatus status);
+	// 챌린지 삭제하는 경우 그 챌린지 참여한 모두 상태 업데이트 (userId 안 받음)
+	void updateParticipantStatusByDelete(Long challengeId, ChallengeParticipantStatus status);
+	// 챌린지 참여 취소하는 경우 상태 업데이트 (userId 받음)
+	void updateParticipantStatus(Long challengeId, Long userId, ChallengeParticipantStatus status);
 
 }

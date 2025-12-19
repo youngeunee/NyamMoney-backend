@@ -97,10 +97,11 @@ public class SecurityConfig {
                         .permitAll()
 
                         // ✅ 유저 관련 API는 로그인(토큰) 필요
-                        .requestMatchers("/api/v1/users/**").authenticated()
+                        //.requestMatchers("/api/v1/users/**").authenticated()
 
                         // ✅ 그 외도 인증 필요
-                        .anyRequest().authenticated()
+                        //.anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 )
                 // 🔹 기본 로그인 기능 비활성화 (JWT만 사용)
                 .httpBasic(h -> h.disable())

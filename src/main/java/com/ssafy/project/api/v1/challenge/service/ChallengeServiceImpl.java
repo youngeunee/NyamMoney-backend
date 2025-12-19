@@ -125,20 +125,21 @@ public class ChallengeServiceImpl implements ChallengeService {
             throw new IllegalStateException("이미 시작되었거나 종료된 챌린지는 삭제할 수 없습니다.");
         }
 
-        // 시간 검증
-        LocalDateTime startsAt = challengeMapper.selectStartsAt(challengeId);
-        if (!LocalDateTime.now().isBefore(startsAt)) {
-            throw new IllegalStateException("이미 시작되었거나 종료된 챌린지는 삭제할 수 없습니다.");
-        }
+//        // 시간 검증
+//        LocalDateTime startsAt = challengeMapper.selectStartsAt(challengeId);
+//        if (!LocalDateTime.now().isBefore(startsAt)) {
+//            throw new IllegalStateException("이미 시작되었거나 종료된 챌린지는 삭제할 수 없습니다.");
+        
         
         // 삭제되기 전에 참여자들 REFUNDED로 바꾸기
-        pMapper.updateParticipantStatus(challengeId, ChallengeParticipantStatus.REFUNDED);
+        pMapper.updateParticipantStatusByDelete(challengeId, ChallengeParticipantStatus.REFUNDED);
 
-        // 3소프트 삭제
+        // 소프트 삭제
         int updated = challengeMapper.softDeleteChallenge(challengeId);
         if (updated == 0) {
             throw new IllegalArgumentException("챌린지 삭제에 실패했습니다.");
         }
 	}
+	
 
 }

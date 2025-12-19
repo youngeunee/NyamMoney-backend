@@ -1,4 +1,4 @@
-package com.ssafy.project.api.v1.challenge.dto;
+package com.ssafy.project.api.v1.challenge.dto.challenge;
 
 import java.time.LocalDateTime;
 
@@ -13,4 +13,5 @@ public class ChallengeCreateParam {
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private int periodDays;
+    private Long userId;
 }

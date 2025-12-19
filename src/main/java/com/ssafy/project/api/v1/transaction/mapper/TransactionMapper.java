@@ -6,6 +6,8 @@ import org.apache.ibatis.annotations.Param;
 import com.ssafy.project.api.v1.transaction.dto.TransactionCreateParam;
 import com.ssafy.project.api.v1.transaction.dto.TransactionCreateResponse;
 import com.ssafy.project.api.v1.transaction.dto.TransactionDetailResponse;
+import com.ssafy.project.api.v1.transaction.dto.TransactionSummaryQuery;
+import com.ssafy.project.api.v1.transaction.dto.TransactionSummaryResponse;
 import com.ssafy.project.api.v1.transaction.dto.TransactionUpdateParam;
 
 @Mapper
@@ -24,4 +26,5 @@ public interface TransactionMapper {
 	int deleteTransaction(@Param("userId") Long userId, 
 						  @Param("transactionId") Long transactionId);
 	
+	TransactionSummaryResponse selectSummary(TransactionSummaryQuery query);
 }

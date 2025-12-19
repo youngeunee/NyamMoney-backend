@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.project.api.v1.challenge.mapper.ChallengeParticipantMapper">
+
+    <select id="selectMyChallenges"
+            resultType="com.ssafy.project.api.v1.challenge.dto.participant.MyChallengeItem">
+        SELECT
+            c.challenge_id AS challengeId,
+            c.title,
+            c.description,
+            DATE_FORMAT(c.starts_at, '%Y-%m-%d') AS startDate,
+            DATE_FORMAT(c.ends_at, '%Y-%m-%d')   AS endDate,
+
+            cp.status AS status,
+
+            /* 진행률 계산 */
+            CASE
+                WHEN c.status IN ('ENDED', 'CLOSED') THEN 1.0
+                WHEN c.status = 'ACTIVE' THEN
+                    ROUND(
+                        DATEDIFF(NOW(), c.starts_at)
+                        / GREATEST(DATEDIFF(c.ends_at, c.starts_at), 1),
+                        2
+                    )
+                ELSE 0.0
+            END AS progress
+
+        FROM challenge_participants cp
+        JOIN challenges c
+          ON cp.challenge_id = c.challenge_id
+
+        WHERE cp.user_id = #{userId}
+
+        ORDER BY c.starts_at DESC
+    </select>
+    
+    <!-- 참여 여부 확인 -->
+    <select id="existsParticipant" resultType="int">
+        SELECT COUNT(*)
+        FROM challenge_participants
+        WHERE challenge_id = #{challengeId} AND user_id = #{userId}
+    </select>
+    
+    <!-- JOINED 여부 확인 -->
+    <select id="JOINEDParticipant" resultType="int">
+        SELECT COUNT(*)
+        FROM challenge_participants
+        WHERE challenge_id = #{challengeId} AND user_id = #{userId} AND status = 'JOINED'
+    </select>
+
+    <!-- 참여 -->
+    <insert id="insertParticipant">
+        INSERT INTO challenge_participants (challenge_id, user_id, status)
+        VALUES (#{challengeId}, #{userId}, 'JOINED')
+    </insert>
+    
+    <!-- 챌린지 삭제하는 경우 참여 status 변경 -->
+    <update id="updateParticipantStatusByDelete">
+	    UPDATE challenge_participants
+	    SET status = #{status}
+	    WHERE challenge_id = #{challengeId}
+	</update>
+	
+	<!-- 챌린지 참여 취소시 status 변경 -->
+	<update id="updateParticipantStatus">
+	    UPDATE challenge_participants
+	    SET status = #{status}
+	    WHERE challenge_id = #{challengeId} AND user_id = #{userId}
+	</update>
+	
+	<!-- 참여자 상태 확인 -->
+    <select id="selectParticipantStatus" resultType="com.ssafy.project.domain.challengeParticipant.ChallengeParticipantStatus">
+	    SELECT status
+	    FROM challenge_participants
+	    WHERE challenge_id = #{challengeId} AND user_id = #{userId}
+	</select>
+	
+	<!-- 참여자 수 조회 -->
+	<select id="countParticipants" resultType="int">
+	    SELECT COUNT(*)
+	    FROM challenge_participants
+	    WHERE challenge_id = #{challengeId}
+	</select>
+	
+
+
+</mapper>

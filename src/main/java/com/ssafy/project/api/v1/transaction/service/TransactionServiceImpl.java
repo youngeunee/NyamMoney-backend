@@ -12,6 +12,8 @@ import com.ssafy.project.api.v1.transaction.dto.TransactionCreateRequest;
 import com.ssafy.project.api.v1.transaction.dto.TransactionCreateResponse;
 import com.ssafy.project.api.v1.transaction.dto.TransactionDetailResponse;
 import com.ssafy.project.api.v1.transaction.dto.TransactionDto;
+import com.ssafy.project.api.v1.transaction.dto.TransactionSummaryQuery;
+import com.ssafy.project.api.v1.transaction.dto.TransactionSummaryResponse;
 import com.ssafy.project.api.v1.transaction.dto.TransactionUpdateParam;
 import com.ssafy.project.api.v1.transaction.dto.TransactionUpdateRequest;
 import com.ssafy.project.api.v1.transaction.mapper.TransactionMapper;
@@ -113,6 +115,31 @@ public class TransactionServiceImpl implements TransactionService {
             throw new IllegalArgumentException("거래내역을 찾을 수 없습니다.");
         }
         return res;
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public TransactionSummaryResponse getSummary(Long userId, LocalDateTime from, LocalDateTime to) {
+
+        TransactionSummaryQuery q = new TransactionSummaryQuery(userId, from, to);
+
+        TransactionSummaryResponse res = transactionMapper.selectSummary(q);
+
+        if (res == null) {
+            return TransactionSummaryResponse.builder()
+                    .from(from)
+                    .to(to)
+                    .totalExpense(0L)
+                    .totalImpulseExpense(0L)
+                    .build();
+        }
+
+        return TransactionSummaryResponse.builder()
+                .from(from)
+                .to(to)
+                .totalExpense(res.getTotalExpense() == null ? 0L : res.getTotalExpense())
+                .totalImpulseExpense(res.getTotalImpulseExpense() == null ? 0L : res.getTotalImpulseExpense())
+                .build();
     }
 
 }

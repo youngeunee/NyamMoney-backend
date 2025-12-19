@@ -1,4 +1,4 @@
-package com.ssafy.project.api.v1.challenge.dto;
+package com.ssafy.project.api.v1.challenge.dto.challenge;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ChallengeDto {
     private Long challengeId;
+    private Long userId;
     private String title;
     private BigDecimal budgetLimit;
     private Integer periodDays;

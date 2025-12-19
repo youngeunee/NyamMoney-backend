@@ -5,21 +5,46 @@
 <mapper namespace="com.ssafy.project.api.v1.challenge.mapper.ChallengeMapper">
 
     <select id="selectChallengeList"
-            resultType="com.ssafy.project.api.v1.challenge.dto.ChallengeListItem">
+            resultType="com.ssafy.project.api.v1.challenge.dto.challenge.ChallengeListItem">
         SELECT
             c.challenge_id AS challengeId,
             c.title,
             c.description,
             DATE_FORMAT(c.starts_at, '%Y-%m-%d') AS startDate,
-            DATE_FORMAT(c.ends_at, '%Y-%m-%d')   AS endDate
+            DATE_FORMAT(c.ends_at, '%Y-%m-%d')   AS endDate,
+            c.user_id AS userId <!-- 생성한 사람 userId -->
         FROM challenges c
         WHERE c.status != 'CLOSED'
         ORDER BY c.starts_at DESC
     </select>
     
+    <!-- 단일 챌린지 상세 조회 -->
+    <select id="selectChallengeDetail" resultType="com.ssafy.project.api.v1.challenge.dto.challenge.ChallengeDetailResponse">
+	    SELECT 
+	        c.challenge_id AS challengeId,
+	        c.title, 
+	        c.description, 
+	        c.starts_at AS startDate, 
+	        c.ends_at AS endDate,
+	        COALESCE(COUNT(cp.challenge_id), 0) AS participantCount,  -- 참여자 수
+	        CASE 
+	            WHEN EXISTS (
+	                SELECT 1
+	                FROM challenge_participants cp
+	                WHERE cp.challenge_id = c.challenge_id
+	                AND cp.user_id = #{userId}
+	            ) THEN true
+	            ELSE false
+	        END AS isJoined  -- 사용자 참여 여부
+	    FROM challenges c
+	    LEFT JOIN challenge_participants cp ON cp.challenge_id = c.challenge_id
+	    WHERE c.challenge_id = #{challengeId}
+	    GROUP BY c.challenge_id
+	</select>
+    
     <insert id="insertChallenge" useGeneratedKeys="true" keyProperty="challengeId">
-	  INSERT INTO challenges (title, description, budget_limit, period_days, starts_at, ends_at, status)
-	  VALUES (#{title}, #{description}, #{budgetLimit}, #{periodDays}, #{startDate}, #{endDate}, 'UPCOMING')
+	  INSERT INTO challenges (title, description, budget_limit, period_days, starts_at, ends_at, status, user_id)
+	  VALUES (#{title}, #{description}, #{budgetLimit}, #{periodDays}, #{startDate}, #{endDate}, 'UPCOMING', #{userId})
 	</insert>
 	
 	<select id="selectStatus" resultType="com.ssafy.project.domain.challenge.model.ChallengeStatus">
@@ -51,5 +76,31 @@
             updated_at = CURRENT_TIMESTAMP
         WHERE challenge_id = #{challengeId}
     </update>
+    
+    <select id="selectUserIdByChallengeId">
+	    SELECT user_id
+	    FROM challenges
+	    WHERE challenge_id = #{challengeId}
+    </select>
+    
+    <!-- 종료된 챌린지 조회 -->
+    <select id="selectExpiredChallengeIds" resultType="Long">
+	    SELECT challenge_id
+	    FROM challenges
+	    WHERE ends_at &lt;= #{currentTime} AND status != 'CLOSED'
+	</select>
+    
+    
+    <!-- 날짜에 따른 챌린지 상태 변경 -->
+    <update id="updateChallengeStatusByDate">
+	    UPDATE challenges
+	    SET status = 
+	        CASE
+	            WHEN starts_at &gt; #{currentTime, jdbcType=TIMESTAMP} THEN 'UPCOMING'  <!-- 시작일이 오늘 이후면 UPCOMING -->
+	            WHEN ends_at &lt; #{currentTime, jdbcType=TIMESTAMP} THEN 'ENDED'       <!-- 종료일이 오늘 이전이면 ENDED -->
+	            ELSE 'ACTIVE'                                    <!-- 그 외에는 ACTIVE -->
+	        END
+	    WHERE status != 'CLOSED'  -- 이미 종료된 챌린지는 제외
+	</update>
     
 </mapper>

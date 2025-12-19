@@ -101,6 +101,7 @@ CREATE TABLE IF NOT EXISTS transactions (
 -- 챌린지
 CREATE TABLE IF NOT EXISTS challenges (
   challenge_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id        BIGINT UNSIGNED NOT NULL, -- 생성한 userId
   title        VARCHAR(120) NOT NULL, -- 예: "일주일 5만원"
   description VARCHAR(255) NOT NULL,
   budget_limit DECIMAL(12,2) NOT NULL,

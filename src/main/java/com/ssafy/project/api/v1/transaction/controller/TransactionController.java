@@ -1,5 +1,7 @@
 package com.ssafy.project.api.v1.transaction.controller;
 
+import java.time.LocalDateTime;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -9,11 +11,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ssafy.project.api.v1.transaction.dto.TransactionCreateRequest;
 import com.ssafy.project.api.v1.transaction.dto.TransactionCreateResponse;
 import com.ssafy.project.api.v1.transaction.dto.TransactionDetailResponse;
+import com.ssafy.project.api.v1.transaction.dto.TransactionSummaryResponse;
 import com.ssafy.project.api.v1.transaction.dto.TransactionUpdateRequest;
 import com.ssafy.project.api.v1.transaction.service.TransactionService;
 import com.ssafy.project.security.auth.UserPrincipal;
@@ -72,4 +76,26 @@ public class TransactionController {
 	    TransactionDetailResponse res = transactionService.getTransactionDetail(userId, transactionId);
 	    return ResponseEntity.ok(res);
 	}
+	
+	@GetMapping("/summary")
+    public ResponseEntity<TransactionSummaryResponse> getSummary(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam(required = false) LocalDateTime from,
+            @RequestParam(required = false) LocalDateTime to
+    ) {
+        Long userId = principal.getUserId();
+
+        // 기본값: to=now, from=to가 속한 달 1일 00:00:00
+        LocalDateTime end = (to != null) ? to : LocalDateTime.now();
+        LocalDateTime start = (from != null)
+                ? from
+                : end.toLocalDate().withDayOfMonth(1).atStartOfDay();
+
+        if (start.isAfter(end)) {
+            throw new IllegalArgumentException("from은 to보다 이후일 수 없습니다.");
+        }
+
+        TransactionSummaryResponse res = transactionService.getSummary(userId, start, end);
+        return ResponseEntity.ok(res);
+    }
 }

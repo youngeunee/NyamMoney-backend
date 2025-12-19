@@ -178,4 +178,39 @@
 	    AND user_id = #{userId}
 	    AND deleted_at IS NULL
 	</update>
+	
+	<select id="selectSummary"
+        parameterType="com.ssafy.project.api.v1.transaction.dto.TransactionSummaryQuery"
+        resultType="com.ssafy.project.api.v1.transaction.dto.TransactionSummaryResponse">
+
+	  <![CDATA[
+	  SELECT
+	    COALESCE(SUM(
+	      CASE
+	        WHEN tx_type = 'EXPENSE'
+	             AND is_refund = 0
+	             AND canceled_at IS NULL
+	        THEN amount
+	        ELSE 0
+	      END
+	    ), 0) AS totalExpense,
+	
+	    COALESCE(SUM(
+	      CASE
+	        WHEN tx_type = 'EXPENSE'
+	             AND impulse_flag = 1
+	             AND is_refund = 0
+	             AND canceled_at IS NULL
+	        THEN amount
+	        ELSE 0
+	      END
+	    ), 0) AS totalImpulseExpense
+	
+	  FROM transactions
+	  WHERE user_id = #{userId}
+	    AND occurred_at >= #{from}
+	    AND occurred_at <= #{to}
+	    AND deleted_at IS NULL
+	  ]]>
+	</select>
 </mapper>

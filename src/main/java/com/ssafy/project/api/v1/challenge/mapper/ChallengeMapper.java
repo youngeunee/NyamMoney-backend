@@ -5,9 +5,10 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
-import com.ssafy.project.api.v1.challenge.dto.ChallengeCreateParam;
-import com.ssafy.project.api.v1.challenge.dto.ChallengeListItem;
-import com.ssafy.project.api.v1.challenge.dto.ChallengeUpdateParam;
+import com.ssafy.project.api.v1.challenge.dto.challenge.ChallengeCreateParam;
+import com.ssafy.project.api.v1.challenge.dto.challenge.ChallengeDetailResponse;
+import com.ssafy.project.api.v1.challenge.dto.challenge.ChallengeListItem;
+import com.ssafy.project.api.v1.challenge.dto.challenge.ChallengeUpdateParam;
 import com.ssafy.project.domain.challenge.model.ChallengeStatus;
 
 @Mapper
@@ -24,5 +25,13 @@ public interface ChallengeMapper {
 	void updateChallenge(ChallengeUpdateParam param);
 
 	int softDeleteChallenge(Long challengeId);
+
+	Long selectUserIdByChallengeId(Long challengeId);
+
+	void updateChallengeStatusByDate(LocalDateTime now);
+
+	List<Long> selectExpiredChallengeIds(LocalDateTime now);
+
+	ChallengeDetailResponse selectChallengeDetail(Long challengeId);
 
 }

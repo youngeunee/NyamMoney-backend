@@ -1,4 +1,4 @@
-package com.ssafy.project.api.v1.challenge.dto;
+package com.ssafy.project.api.v1.challenge.dto.challenge;
 
 import java.time.LocalDateTime;
 

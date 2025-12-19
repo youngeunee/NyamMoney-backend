@@ -49,4 +49,12 @@
         INSERT INTO challenge_participants (challenge_id, user_id, status)
         VALUES (#{challengeId}, #{userId}, 'JOINED')
     </insert>
+    
+    <!-- 참여 status 변경 -->
+    <update id="updateParticipantStatus">
+	    UPDATE challenge_participants
+	    SET status = #{status}
+	    WHERE challenge_id = #{challengeId}
+	</update>
+    
 </mapper>

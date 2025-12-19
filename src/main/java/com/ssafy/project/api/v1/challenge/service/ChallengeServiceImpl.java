@@ -17,20 +17,25 @@ import com.ssafy.project.api.v1.challenge.dto.challenge.ChallengeUpdateRequest;
 import com.ssafy.project.api.v1.challenge.mapper.ChallengeMapper;
 import com.ssafy.project.api.v1.challenge.mapper.ChallengeParticipantMapper;
 import com.ssafy.project.domain.challenge.model.ChallengeStatus;
+import com.ssafy.project.domain.challengeParticipant.ChallengeParticipantStatus;
 
 
 @Service
 public class ChallengeServiceImpl implements ChallengeService {
-	private ChallengeMapper challengeMapper;
-	private ChallengeParticipantMapper pMapper;
+	private final ChallengeMapper challengeMapper;
+	private final ChallengeParticipantMapper pMapper;
+	//private final ChallengeSchedulerService a;
 	public ChallengeServiceImpl(ChallengeMapper challengeMapper, ChallengeParticipantMapper pMapper) {
 		this.challengeMapper = challengeMapper;
 		this.pMapper = pMapper;
+		//this.a = a;
 	}
 
 	@Override
 	public ChallengeListResponse getChallengeList() {
 		List<ChallengeListItem> items = challengeMapper.selectChallengeList();
+		// 스케줄러 작동하는지 확인
+        //a.checkExpiredChallenges();
         return new ChallengeListResponse(items);
 	}
 
@@ -125,6 +130,9 @@ public class ChallengeServiceImpl implements ChallengeService {
         if (!LocalDateTime.now().isBefore(startsAt)) {
             throw new IllegalStateException("이미 시작되었거나 종료된 챌린지는 삭제할 수 없습니다.");
         }
+        
+        // 삭제되기 전에 참여자들 REFUNDED로 바꾸기
+        pMapper.updateParticipantStatus(challengeId, ChallengeParticipantStatus.REFUNDED);
 
         // 3소프트 삭제
         int updated = challengeMapper.softDeleteChallenge(challengeId);

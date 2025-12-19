@@ -12,7 +12,7 @@
             c.description,
             DATE_FORMAT(c.starts_at, '%Y-%m-%d') AS startDate,
             DATE_FORMAT(c.ends_at, '%Y-%m-%d')   AS endDate,
-            c.user_id AS userId -- 생성한 사람 userId
+            c.user_id AS userId <!-- 생성한 사람 userId -->
         FROM challenges c
         WHERE c.status != 'CLOSED'
         ORDER BY c.starts_at DESC
@@ -58,5 +58,25 @@
 	    FROM challenges
 	    WHERE challenge_id = #{challengeId}
     </select>
+    
+    <!-- 종료된 챌린지 조회 -->
+    <select id="selectExpiredChallengeIds" resultType="Long">
+	    SELECT challenge_id
+	    FROM challenges
+	    WHERE ends_at &lt;= #{currentTime} AND status != 'CLOSED'
+	</select>
+    
+    
+    <!-- 날짜에 따른 챌린지 상태 변경 -->
+    <update id="updateChallengeStatusByDate">
+	    UPDATE challenges
+	    SET status = 
+	        CASE
+	            WHEN starts_at &gt; #{currentTime, jdbcType=TIMESTAMP} THEN 'UPCOMING'  <!-- 시작일이 오늘 이후면 UPCOMING -->
+	            WHEN ends_at &lt; #{currentTime, jdbcType=TIMESTAMP} THEN 'ENDED'       <!-- 종료일이 오늘 이전이면 ENDED -->
+	            ELSE 'ACTIVE'                                    <!-- 그 외에는 ACTIVE -->
+	        END
+	    WHERE status != 'CLOSED'  -- 이미 종료된 챌린지는 제외
+	</update>
     
 </mapper>

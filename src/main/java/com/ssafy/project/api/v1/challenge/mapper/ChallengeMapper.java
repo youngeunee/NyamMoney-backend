@@ -27,4 +27,8 @@ public interface ChallengeMapper {
 
 	Long selectUserIdByChallengeId(Long challengeId);
 
+	void updateChallengeStatusByDate(LocalDateTime now);
+
+	List<Long> selectExpiredChallengeIds(LocalDateTime now);
+
 }

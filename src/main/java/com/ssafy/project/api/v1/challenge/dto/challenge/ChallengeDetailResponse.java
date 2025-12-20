@@ -2,6 +2,8 @@ package com.ssafy.project.api.v1.challenge.dto.challenge;
 
 import java.time.LocalDateTime;
 
+import com.ssafy.project.domain.challenge.model.ChallengeStatus;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -15,4 +17,6 @@ public class ChallengeDetailResponse {
     private LocalDateTime endDate;
     private int participantCount;
     private boolean isJoined;
+    
+    private ChallengeStatus status;
 }

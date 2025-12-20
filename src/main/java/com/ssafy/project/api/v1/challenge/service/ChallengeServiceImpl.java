@@ -71,7 +71,8 @@ public class ChallengeServiceImpl implements ChallengeService {
             challengeDetail.getStartDate(),
             challengeDetail.getEndDate(),
             participantCount,
-            isJoined);
+            isJoined,
+            challengeDetail.getStatus());
 	}
 	
 	@Override

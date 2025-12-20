@@ -59,8 +59,8 @@ public class ChallengeServiceImpl implements ChallengeService {
         boolean isJoined = false;
         if (userId != null) {
             isJoined = pMapper.JOINEDParticipant(userId, challengeId) > 0;
-            log.debug("count?: " + pMapper.JOINEDParticipant(userId, challengeId));
-            log.debug("isJoined?" + isJoined);
+//            log.debug("count?: " + pMapper.JOINEDParticipant(userId, challengeId));
+//            log.debug("isJoined?" + isJoined);
         }
 
         // 응답 생성

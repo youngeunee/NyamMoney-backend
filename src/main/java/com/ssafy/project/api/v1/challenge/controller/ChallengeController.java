@@ -45,7 +45,7 @@ public class ChallengeController {
 	@GetMapping("/{challengeId}")
 	public ResponseEntity<ChallengeDetailResponse> getChallengeDetail(@PathVariable Long challengeId,
             @AuthenticationPrincipal UserPrincipal user) {
-		Long userId = user.getUserId();
+		Long userId = (user != null) ? user.getUserId() : null;
 		ChallengeDetailResponse response = challengeService.getChallengeDetail(challengeId, userId);
 		return ResponseEntity.ok(response);
 	}
@@ -53,7 +53,7 @@ public class ChallengeController {
 	@PostMapping
 	public ResponseEntity<ChallengeCreateResponse> createChallenge(
 			@RequestBody @Valid ChallengeCreateRequest request, @AuthenticationPrincipal UserPrincipal user){
-		Long userId = user.getUserId();
+		Long userId = (user != null) ? user.getUserId() : null;
 		ChallengeCreateResponse response = challengeService.createChallenge(request, userId);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
@@ -62,14 +62,14 @@ public class ChallengeController {
 	public ResponseEntity<Void> updateChallenge(
             @PathVariable Long challengeId,
             @RequestBody @Valid ChallengeUpdateRequest request, @AuthenticationPrincipal UserPrincipal user) throws Exception {
-		Long userId = user.getUserId();
+		Long userId = (user != null) ? user.getUserId() : null;
         challengeService.updateChallenge(challengeId, request, userId);
         return ResponseEntity.noContent().build();
     }
 	
 	@DeleteMapping("/{challengeId}")
 	public ResponseEntity<Void> deleteChallenge(@PathVariable Long challengeId, @AuthenticationPrincipal UserPrincipal user) throws Exception {
-		Long userId = user.getUserId();
+		Long userId = (user != null) ? user.getUserId() : null;
         challengeService.deleteChallenge(challengeId, userId);
         return ResponseEntity.noContent().build();
     }
@@ -78,7 +78,7 @@ public class ChallengeController {
 	@GetMapping("/me")
 	public ResponseEntity<MyChallengeListResponse> getMyChallenges(
             @AuthenticationPrincipal UserPrincipal user) {
-		Long userId = user.getUserId();
+		Long userId = (user != null) ? user.getUserId() : null;
         return ResponseEntity.ok(pService.getMyChallenges(userId));
     }
 	
@@ -92,7 +92,7 @@ public class ChallengeController {
 	@DeleteMapping("/{challengeId}/join")
 	public ResponseEntity<Void> cancelChallengeJoin(@PathVariable Long challengeId,
             @AuthenticationPrincipal UserPrincipal user) {
-		Long userId = user.getUserId();
+		Long userId = (user != null) ? user.getUserId() : null;
 		pService.cancelChallengeJoin(challengeId, userId);
 		return ResponseEntity.noContent().build();  // 204 No Content
 	}

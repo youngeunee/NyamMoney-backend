@@ -103,4 +103,13 @@
 	    WHERE status != 'CLOSED'  -- 이미 종료된 챌린지는 제외
 	</update>
     
+    
+    <resultMap id="ChallengeDetailMap"
+    type="com.ssafy.project.api.v1.challenge.dto.challenge.ChallengeDetailResponse">
+	    <id property="challengeId" column="challenge_id"/>
+	    <result property="title" column="title"/>
+	    <result property="description" column="description"/>
+	    <result property="startDate" column="starts_at"/>
+	    <result property="endDate" column="ends_at"/>
+	</resultMap>
 </mapper>

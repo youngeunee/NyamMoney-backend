@@ -18,6 +18,7 @@ import com.ssafy.project.api.v1.challenge.dto.challenge.ChallengeDetailResponse;
 import com.ssafy.project.api.v1.challenge.dto.challenge.ChallengeListResponse;
 import com.ssafy.project.api.v1.challenge.dto.challenge.ChallengeUpdateRequest;
 import com.ssafy.project.api.v1.challenge.dto.participant.ChallengeJoinResponse;
+import com.ssafy.project.api.v1.challenge.dto.participant.ChallengeParticipantListResponse;
 import com.ssafy.project.api.v1.challenge.dto.participant.MyChallengeListResponse;
 import com.ssafy.project.api.v1.challenge.service.ChallengeParticipantService;
 import com.ssafy.project.api.v1.challenge.service.ChallengeService;
@@ -94,6 +95,12 @@ public class ChallengeController {
 		Long userId = user.getUserId();
 		pService.cancelChallengeJoin(challengeId, userId);
 		return ResponseEntity.noContent().build();  // 204 No Content
+	}
+	
+	// 특정 챌린지 참여 중인 사용자 목록 조회
+	@GetMapping("/{challengeId}/participants")
+	public ResponseEntity<ChallengeParticipantListResponse> getChallengeParticipants(@PathVariable Long challengeId) {
+	    return ResponseEntity.ok(pService.getChallengeParticipants(challengeId));
 	}
 
 }

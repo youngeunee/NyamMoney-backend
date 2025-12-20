@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import com.ssafy.project.api.v1.challenge.dto.participant.ChallengeParticipantItem;
 import com.ssafy.project.api.v1.challenge.dto.participant.MyChallengeItem;
 import com.ssafy.project.domain.challengeParticipant.ChallengeParticipantStatus;
 
@@ -29,5 +30,7 @@ public interface ChallengeParticipantMapper {
 	int countParticipants(Long challengeId);
 
 	int JOINEDParticipant(Long userId, Long challengeId);
+	// 특정 챌린지 참여중인 사용자 목록 조회
+	List<ChallengeParticipantItem> selectParticipantsByChallengeId(Long challengeId);
 
 }

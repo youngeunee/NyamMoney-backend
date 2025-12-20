@@ -84,6 +84,37 @@
 	    WHERE challenge_id = #{challengeId}
 	</select>
 	
+	<!-- 특정 챌린지 참여 중인 사용자 조회 -->
+	<select id="selectParticipantsByChallengeId"
+        resultType="com.ssafy.project.api.v1.challenge.dto.participant.ChallengeParticipantItem">
 
+	    SELECT
+	        u.user_id        AS userId,
+	        u.nickname       AS nickname,
+	        cp.joined_at     AS joinedAt,
+	        cp.status        AS status,
+	
+	        CASE
+	            WHEN c.status IN ('ENDED', 'CLOSED') THEN 1.0
+	            WHEN c.status = 'ACTIVE' THEN
+	                ROUND(
+	                    DATEDIFF(NOW(), c.starts_at)
+	                    / GREATEST(DATEDIFF(c.ends_at, c.starts_at), 1),
+	                    2
+	                )
+	            ELSE 0.0
+	        END AS progress
+	
+	    FROM challenge_participants cp
+	    JOIN users u
+	      ON cp.user_id = u.user_id
+	    JOIN challenges c
+	      ON cp.challenge_id = c.challenge_id
+	
+	    WHERE cp.challenge_id = #{challengeId}
+	
+	    ORDER BY cp.joined_at ASC
+	</select>
+	
 
 </mapper>

@@ -6,6 +6,8 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.ssafy.project.api.v1.challenge.dto.participant.ChallengeJoinResponse;
+import com.ssafy.project.api.v1.challenge.dto.participant.ChallengeParticipantItem;
+import com.ssafy.project.api.v1.challenge.dto.participant.ChallengeParticipantListResponse;
 import com.ssafy.project.api.v1.challenge.dto.participant.MyChallengeItem;
 import com.ssafy.project.api.v1.challenge.dto.participant.MyChallengeListResponse;
 import com.ssafy.project.api.v1.challenge.mapper.ChallengeMapper;
@@ -82,5 +84,11 @@ public class ChallengeParticipantServiceImpl implements ChallengeParticipantServ
         else {
         	pMapper.updateParticipantStatus(challengeId, userId, ChallengeParticipantStatus.FAILED);
         }
+	}
+
+	@Override
+	public ChallengeParticipantListResponse getChallengeParticipants(Long challengeId) {
+		List<ChallengeParticipantItem> participants = pMapper.selectParticipantsByChallengeId(challengeId);
+	    return new ChallengeParticipantListResponse(challengeId, participants);
 	}
 }

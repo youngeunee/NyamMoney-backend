@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import com.ssafy.project.api.v1.challenge.dto.challenge.ChallengeCreateParam;
 import com.ssafy.project.api.v1.challenge.dto.challenge.ChallengeDetailResponse;
@@ -14,7 +15,7 @@ import com.ssafy.project.domain.challenge.model.ChallengeStatus;
 @Mapper
 public interface ChallengeMapper {
 
-	List<ChallengeListItem> selectChallengeList();
+	List<ChallengeListItem> selectChallengeList(@Param("userId") Long userId);
 
 	int insertChallenge(ChallengeCreateParam param);
 

@@ -36,8 +36,8 @@ public class ChallengeServiceImpl implements ChallengeService {
 	}
 
 	@Override
-	public ChallengeListResponse getChallengeList() {
-		List<ChallengeListItem> items = challengeMapper.selectChallengeList();
+	public ChallengeListResponse getChallengeList(Long userId) {
+		List<ChallengeListItem> items = challengeMapper.selectChallengeList(userId);
 		// 스케줄러 작동하는지 확인
         //a.checkExpiredChallenges();
         return new ChallengeListResponse(items);

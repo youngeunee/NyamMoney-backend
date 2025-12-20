@@ -10,7 +10,7 @@ import jakarta.validation.Valid;
 
 public interface ChallengeService {
 
-	ChallengeListResponse getChallengeList();
+	ChallengeListResponse getChallengeList(Long userId);
 
 	ChallengeCreateResponse createChallenge(@Valid ChallengeCreateRequest request, Long userId);
 

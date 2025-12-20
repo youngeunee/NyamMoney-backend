@@ -37,8 +37,9 @@ public class ChallengeController {
 	}
 	
 	@GetMapping
-	public ResponseEntity<ChallengeListResponse> getChallenge() {
-		return ResponseEntity.ok(challengeService.getChallengeList());
+	public ResponseEntity<ChallengeListResponse> getChallenge(@AuthenticationPrincipal UserPrincipal user) {
+		Long userId = (user != null) ? user.getUserId() : null;
+		return ResponseEntity.ok(challengeService.getChallengeList(userId));
 	}
 	
 	// 단일 챌린지 상세조회

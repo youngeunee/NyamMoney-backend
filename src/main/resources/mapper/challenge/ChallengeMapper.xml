@@ -4,19 +4,33 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ssafy.project.api.v1.challenge.mapper.ChallengeMapper">
 
-    <select id="selectChallengeList"
-            resultType="com.ssafy.project.api.v1.challenge.dto.challenge.ChallengeListItem">
-        SELECT
-            c.challenge_id AS challengeId,
-            c.title,
-            c.description,
-            DATE_FORMAT(c.starts_at, '%Y-%m-%d') AS startDate,
-            DATE_FORMAT(c.ends_at, '%Y-%m-%d')   AS endDate,
-            c.user_id AS userId <!-- 생성한 사람 userId -->
-        FROM challenges c
-        WHERE c.status != 'CLOSED'
-        ORDER BY c.starts_at DESC
-    </select>
+    <select id="selectChallengeList" parameterType="long"
+        resultType="com.ssafy.project.api.v1.challenge.dto.challenge.ChallengeListItem">
+	  SELECT
+	    c.challenge_id      AS challengeId,
+	    c.title,
+	    c.description,
+	    c.starts_at        AS startDate,
+	    c.ends_at          AS endDate,
+	    c.status            AS status,
+	
+	    COUNT(cp.user_id)   AS participantCount,
+	
+	    CASE
+	      WHEN #{userId} IS NULL THEN false
+	      WHEN SUM(CASE WHEN cp.user_id = #{userId} THEN 1 ELSE 0 END) > 0
+	        THEN true
+	      ELSE false
+	    END                 AS isJoined
+	
+	  FROM challenges c
+	  LEFT JOIN challenge_participants cp
+	    ON c.challenge_id = cp.challenge_id
+	    AND cp.status = 'JOINED'
+	
+	  GROUP BY c.challenge_id
+	</select>
+
     
     <!-- 단일 챌린지 상세 조회 -->
     <select id="selectChallengeDetail" resultType="com.ssafy.project.api.v1.challenge.dto.challenge.ChallengeDetailResponse">

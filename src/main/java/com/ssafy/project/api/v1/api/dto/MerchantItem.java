@@ -1,7 +1,5 @@
 package com.ssafy.project.api.v1.api.dto;
 
-import java.util.List;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,7 +15,7 @@ public class MerchantItem {
     private String indsLclsNm;  // 업종 대분류명
     private String indsMclsNm;  // 업종 중분류명
     private String indsSclsNm;  // 업종 소분류명
-    private String lon;         // 경도
-    private String lat;         // 위도
+    private Double lon;         // 경도
+    private Double lat;         // 위도
 
 }

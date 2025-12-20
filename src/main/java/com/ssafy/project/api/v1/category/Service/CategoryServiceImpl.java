@@ -36,7 +36,11 @@ public class CategoryServiceImpl implements CategoryService{
         case "소매":
             return mapRetailCategory(industryMcls);  // 소매 대분류 -> 중분류에 따라 카테고리 매핑
         
+        case "도매":
+        	return mapWholesaleCategory(industryMcls);
+        
         case "음식":
+        case "농업·임업·어업":
             return "식비";
         
         case "제조업":
@@ -47,21 +51,44 @@ public class CategoryServiceImpl implements CategoryService{
         
         case "금융·보험":
         	return "금융";
-        	
+
+        case "보건의료":
+        	return "건강·의료";
+        
         case "부동산":
         case "전기·가스·증기 공급":
         case "수도·하수 처리·원료 재생업":
+        case "공공 행정·국방":
         	return "주거·생활요금";
         
         case "예술·스포츠":
         case "정보통신":
+        case "숙박":
+        case "시설관리·임대":
         	return "여가·취미";
+        	
 
         default:
             return "기타";
 		}
 	}
 	
+	private String mapWholesaleCategory(String industryMcls) {
+		if (industryMcls == null) return "쇼핑";
+		
+		switch (industryMcls) {
+		case "건축자재·난방 도매":
+			return "주거·생활요금";
+		
+		case "농축산 도매":
+		case "음식료·담배 도매":
+			return "식비";
+			
+		default:
+			return "쇼핑";
+		}
+	}
+
 	// 소매 대분류에 따른 카테고리 매핑
 	@Override
 	public String mapRetailCategory(String industryMcls) {
@@ -130,5 +157,7 @@ public class CategoryServiceImpl implements CategoryService{
                 return "쇼핑";
         }
     }
-
+	
+	
+	// 도매 대분
 }

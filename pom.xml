@@ -30,6 +30,8 @@
 		<java.version>17</java.version>
 		<spring-ai.version>1.1.0</spring-ai.version>
 		<jwt-version>0.13.0</jwt-version>
+		<spring-ai.version>1.1.0</spring-ai.version>
+
 	</properties>
 	<dependencies>
 		<dependency>
@@ -41,12 +43,6 @@
 			<artifactId>mybatis-spring-boot-starter</artifactId>
 			<version>3.0.5</version>
 		</dependency>
-		<!--
-		<dependency>
-			<groupId>org.springframework.ai</groupId>
-			<artifactId>spring-ai-starter-vector-store-cassandra</artifactId>
-		</dependency>
-		-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
@@ -120,6 +116,51 @@
 			    <version>${jwt-version}</version>
 			    <scope>runtime</scope>
 			</dependency>
+			
+			
+			<!-- OpenAI Embedding -->
+			<dependency>
+			    <groupId>org.springframework.ai</groupId>
+			    <artifactId>spring-ai-starter-model-openai</artifactId>
+			</dependency>
+			
+			<dependency>
+			    <groupId>org.springframework.ai</groupId>
+			    <artifactId>spring-ai-starter-vector-store-redis</artifactId>
+			</dependency>
+			
+			<!-- Redis Vector Store -->
+	        <dependency>
+	            <groupId>org.springframework.ai</groupId>
+	            <artifactId>spring-ai-starter-vector-store-redis</artifactId>
+	        </dependency>
+	        <dependency>
+	            <groupId>org.springframework.ai</groupId>
+	            <artifactId>spring-ai-starter-model-google-genai-embedding</artifactId>
+	        </dependency>
+	        
+	        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-model-chat-memory-repository-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+			
+			<!-- https://mvnrepository.com/artifact/redis.clients/jedis -->
+			<dependency>
+			    <groupId>redis.clients</groupId>
+			    <artifactId>jedis</artifactId>
+			    <version>7.2.0</version>
+			</dependency>
+			<!--
+			<dependency>
+	            <groupId>org.springframework.ai</groupId>
+	            <artifactId>spring-ai-starter-model-google-genai</artifactId>
+	        </dependency>
+ 			-->
 	</dependencies>
 	
 	<dependencyManagement>

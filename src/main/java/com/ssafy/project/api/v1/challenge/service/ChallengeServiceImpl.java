@@ -77,8 +77,8 @@ public class ChallengeServiceImpl implements ChallengeService {
 	
 	@Override
 	public ChallengeCreateResponse createChallenge(ChallengeCreateRequest request, Long userId) {
-		LocalDate start = request.getStartDate().toLocalDate();
-	    LocalDate end = request.getEndDate().toLocalDate();
+		LocalDate start = request.getStartDate();
+	    LocalDate end = request.getEndDate();
 	    
 	    if (end.isBefore(start)) {
 	        throw new IllegalArgumentException("종료일은 시작일보다 빠를 수 없습니다.");

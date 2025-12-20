@@ -1,5 +1,6 @@
 package com.ssafy.project.api.v1.challenge.dto.challenge;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import jakarta.validation.constraints.NotBlank;
@@ -19,8 +20,8 @@ public class ChallengeCreateRequest {
     @PositiveOrZero(message = "예산 한도는 0 이상이어야 합니다.")
 	private Long budgetLimit;
 	@NotNull(message = "시작일은 필수입니다.")
-    private LocalDateTime startDate;
+    private LocalDate startDate;
 	@NotNull(message = "종료일은 필수입니다.")
-    private LocalDateTime endDate;
+    private LocalDate endDate;
 
 }

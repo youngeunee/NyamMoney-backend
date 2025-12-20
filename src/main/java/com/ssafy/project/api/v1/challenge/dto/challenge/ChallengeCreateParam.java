@@ -1,6 +1,6 @@
 package com.ssafy.project.api.v1.challenge.dto.challenge;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import lombok.Data;
 
@@ -10,8 +10,8 @@ public class ChallengeCreateParam {
     private String title;
     private String description;
     private Long budgetLimit;
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private int periodDays;
     private Long userId;
 }

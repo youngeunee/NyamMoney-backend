@@ -16,7 +16,7 @@ public class CursorUtil {
         );
     }
 
-    public static String format(LocalDateTime createdAt, Long postId) {
-        return createdAt.toString() + "|" + postId;
+    public static String format(LocalDateTime createdAt, Long id) {
+        return createdAt.toString() + "|" + id;
     }
 }

@@ -1,6 +1,7 @@
 package com.ssafy.project.api.v1.transaction.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,19 +11,26 @@ import com.ssafy.project.api.v1.category.mapper.CategoryMapper;
 import com.ssafy.project.api.v1.transaction.dto.TransactionCreateParam;
 import com.ssafy.project.api.v1.transaction.dto.TransactionCreateRequest;
 import com.ssafy.project.api.v1.transaction.dto.TransactionCreateResponse;
+import com.ssafy.project.api.v1.transaction.dto.TransactionCursorRequest;
 import com.ssafy.project.api.v1.transaction.dto.TransactionDetailResponse;
 import com.ssafy.project.api.v1.transaction.dto.TransactionDto;
+import com.ssafy.project.api.v1.transaction.dto.TransactionItem;
 import com.ssafy.project.api.v1.transaction.dto.TransactionSummaryQuery;
 import com.ssafy.project.api.v1.transaction.dto.TransactionSummaryResponse;
 import com.ssafy.project.api.v1.transaction.dto.TransactionUpdateParam;
 import com.ssafy.project.api.v1.transaction.dto.TransactionUpdateRequest;
 import com.ssafy.project.api.v1.transaction.mapper.TransactionMapper;
+import com.ssafy.project.common.dto.CursorPage;
+import com.ssafy.project.common.util.CursorUtil;
 
 @Service
 public class TransactionServiceImpl implements TransactionService {
 	
 	private final TransactionMapper transactionMapper;
     private final CategoryMapper categoryMapper;
+    
+	private static final int DEFAULT_SIZE = 10;
+    private static final int MAX_SIZE = 50;
     
     public TransactionServiceImpl(TransactionMapper transactionMapper, CategoryMapper categoryMapper) {
     	this.transactionMapper = transactionMapper;
@@ -141,5 +149,57 @@ public class TransactionServiceImpl implements TransactionService {
                 .totalImpulseExpense(res.getTotalImpulseExpense() == null ? 0L : res.getTotalImpulseExpense())
                 .build();
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public CursorPage<TransactionItem> getTransactions(Long userId, TransactionCursorRequest req) {
 
+        // 1) size 결정
+        int size = req.getSize() == null ? DEFAULT_SIZE : req.getSize();
+        if (size < 1) size = DEFAULT_SIZE;
+        if (size > MAX_SIZE) size = MAX_SIZE;
+
+        // 2) 기간 기본값
+        LocalDateTime to = (req.getTo() != null) ? req.getTo() : LocalDateTime.now();
+        LocalDateTime from = (req.getFrom() != null) ? req.getFrom() : to.toLocalDate().withDayOfMonth(1).atStartOfDay();
+
+        if (from.isAfter(to)) {
+            throw new IllegalArgumentException("from은 to보다 이후일 수 없습니다.");
+        }
+
+        // 3) cursor 파싱 (없으면 null)
+        LocalDateTime cursorOccurredAt = null;
+        Long cursorTransactionId = null;
+
+        if (req.getCursor() != null && !req.getCursor().isBlank()) {
+            CursorUtil.Cursor c = CursorUtil.parse(req.getCursor());
+            cursorOccurredAt = c.createdAt(); // CursorUtil이 createdAt 필드명을 쓰고 있으면 그대로
+            cursorTransactionId = c.id();
+        }
+
+        // 4) size + 1 로 조회해서 hasNext 판단
+        List<TransactionItem> rows = transactionMapper.selectTransactionsCursor(
+                userId,
+                from,
+                to,
+                cursorOccurredAt,
+                cursorTransactionId,
+                size + 1
+        );
+
+        boolean hasNext = rows.size() > size;
+        if (hasNext) rows = rows.subList(0, size);
+
+        // 5) nextCursor 계산 (마지막 요소 기준)
+        String nextCursor = null;
+        if (hasNext && !rows.isEmpty()) {
+            TransactionItem last = rows.get(rows.size() - 1);
+            nextCursor = CursorUtil.format(last.getOccurredAt(), last.getTransactionId());
+        }
+
+        // 6) totalCount (기간 기준이므로 count도 기간 조건으로 맞추는 게 자연스럽습니다)
+        long totalCount = transactionMapper.countTransactionsByPeriod(userId, from, to);
+
+        return new CursorPage<>(rows, nextCursor, hasNext, totalCount);
+    }
 }

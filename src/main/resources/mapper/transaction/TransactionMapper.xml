@@ -32,34 +32,43 @@
   </resultMap>
 	
 	
-<resultMap id="TransactionDetailResponseMap"
-           type="com.ssafy.project.api.v1.transaction.dto.TransactionDetailResponse">
+	<resultMap id="TransactionDetailResponseMap"
+	           type="com.ssafy.project.api.v1.transaction.dto.TransactionDetailResponse">
+	
+	  <id     property="transactionId" column="transaction_id"/>
+	  <result property="txType"         column="tx_type"/>
+	  <result property="amount"         column="amount"/>
+	  <result property="occurredAt"     column="occurred_at"/>
+	
+	  <result property="merchantName"   column="merchant_name"/>
+	  <result property="memo"           column="memo"/>
+	  <result property="tags"           column="tags"/>
+	
+	  <result property="impulseFlag"    column="impulse_flag"/>
+	  <result property="isRefund"       column="is_refund"/>
+	  <result property="canceledAt"     column="canceled_at"/>
+	
+	  <result property="createdAt"      column="created_at"/>
+	  <result property="updatedAt"      column="updated_at"/>
+	
+	  <association property="category"
+	               javaType="com.ssafy.project.api.v1.category.dto.CategoryItem"
+	               columnPrefix="cat_">
+	    <id     property="categoryId" column="category_id"/>
+	    <result property="name"       column="name"/>
+	  </association>
+	</resultMap>	
 
-  <id     property="transactionId" column="transaction_id"/>
-  <result property="txType"         column="tx_type"/>
-  <result property="amount"         column="amount"/>
-  <result property="occurredAt"     column="occurred_at"/>
-
-  <result property="merchantName"   column="merchant_name"/>
-  <result property="memo"           column="memo"/>
-  <result property="tags"           column="tags"/>
-
-  <result property="impulseFlag"    column="impulse_flag"/>
-  <result property="isRefund"       column="is_refund"/>
-  <result property="canceledAt"     column="canceled_at"/>
-
-  <result property="createdAt"      column="created_at"/>
-  <result property="updatedAt"      column="updated_at"/>
-
-  <association property="category"
-               javaType="com.ssafy.project.api.v1.category.dto.CategoryItem"
-               columnPrefix="cat_">
-    <id     property="categoryId" column="category_id"/>
-    <result property="name"       column="name"/>
-  </association>
-</resultMap>	
-
-
+	<resultMap id="TransactionItemMap"
+	           type="com.ssafy.project.api.v1.transaction.dto.TransactionItem">
+	  <id     property="transactionId"   column="transaction_id"/>
+	  <result property="occurredAt"      column="occurred_at"/>
+	  <result property="amount"          column="amount"/>
+	  <result property="paymentMethod"   column="payment_method"/>
+	  <result property="merchantNameRaw" column="merchant_name_raw"/>
+	  <result property="impulseFlag"     column="impulse_flag"/>
+	  <result property="isRefund"        column="is_refund"/>
+	</resultMap>	
 
   <insert id="insertTransaction"
           parameterType="com.ssafy.project.api.v1.transaction.dto.TransactionCreateParam"
@@ -212,5 +221,41 @@
 	    AND occurred_at <= #{to}
 	    AND deleted_at IS NULL
 	  ]]>
+	</select>
+	
+	<select id="selectTransactionsCursor" resultMap="TransactionItemMap">
+	  SELECT
+	    t.transaction_id,
+	    t.occurred_at,
+	    t.amount,
+	    t.payment_method,
+	    t.merchant_name_raw,
+	    t.impulse_flag,
+	    t.is_refund
+	  FROM transactions t
+	  WHERE t.deleted_at IS NULL
+	    AND t.user_id = #{userId}
+	    AND t.occurred_at &gt;= #{from}
+	    AND t.occurred_at &lt;= #{to}
+	
+	    <!-- cursor가 있을 때만 적용 -->
+	    <if test="cursorOccurredAt != null and cursorTransactionId != null">
+	      AND (
+	        t.occurred_at &lt; #{cursorOccurredAt}
+	        OR (t.occurred_at = #{cursorOccurredAt} AND t.transaction_id &lt; #{cursorTransactionId})
+	      )
+	    </if>
+	
+	  ORDER BY t.occurred_at DESC, t.transaction_id DESC
+	  LIMIT #{limit}
+	</select>
+	
+	<select id="countTransactionsByPeriod" resultType="long">
+	  SELECT COUNT(*)
+	  FROM transactions t
+	  WHERE t.deleted_at IS NULL
+	    AND t.user_id = #{userId}
+	    AND t.occurred_at &gt;= #{from}
+	    AND t.occurred_at &lt;= #{to}
 	</select>
 </mapper>

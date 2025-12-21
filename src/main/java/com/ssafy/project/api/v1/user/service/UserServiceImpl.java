@@ -241,7 +241,8 @@ public class UserServiceImpl implements UserService {
 		return uMapper.countLoginId(loginId) > 0;
 	}
 	
-	 public CursorPage<UserPostItem> getUserPosts(Long userId, UserPostCursorRequest req) {
+	@Override
+	public CursorPage<UserPostItem> getUserPosts(Long userId, UserPostCursorRequest req) {
 
 	        // 1) size 결정 (안 들어오면 기본값)
 	        int size = req.getSize() == null ? DEFAULT_SIZE : req.getSize();

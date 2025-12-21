@@ -1,11 +1,15 @@
 package com.ssafy.project.api.v1.transaction.mapper;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.ssafy.project.api.v1.transaction.dto.TransactionCreateParam;
 import com.ssafy.project.api.v1.transaction.dto.TransactionCreateResponse;
 import com.ssafy.project.api.v1.transaction.dto.TransactionDetailResponse;
+import com.ssafy.project.api.v1.transaction.dto.TransactionItem;
 import com.ssafy.project.api.v1.transaction.dto.TransactionSummaryQuery;
 import com.ssafy.project.api.v1.transaction.dto.TransactionSummaryResponse;
 import com.ssafy.project.api.v1.transaction.dto.TransactionUpdateParam;
@@ -27,4 +31,19 @@ public interface TransactionMapper {
 						  @Param("transactionId") Long transactionId);
 	
 	TransactionSummaryResponse selectSummary(TransactionSummaryQuery query);
+
+	List<TransactionItem> selectTransactionsCursor(
+		    @Param("userId") Long userId,
+		    @Param("from") LocalDateTime from,
+		    @Param("to") LocalDateTime to,
+		    @Param("cursorOccurredAt") LocalDateTime cursorOccurredAt,
+		    @Param("cursorTransactionId") Long cursorTransactionId,
+		    @Param("limit") int limit
+		);
+
+		long countTransactionsByPeriod(
+		    @Param("userId") Long userId,
+		    @Param("from") LocalDateTime from,
+		    @Param("to") LocalDateTime to
+		);
 }

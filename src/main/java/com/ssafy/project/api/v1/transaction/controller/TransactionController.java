@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,10 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ssafy.project.api.v1.transaction.dto.TransactionCreateRequest;
 import com.ssafy.project.api.v1.transaction.dto.TransactionCreateResponse;
+import com.ssafy.project.api.v1.transaction.dto.TransactionCursorRequest;
 import com.ssafy.project.api.v1.transaction.dto.TransactionDetailResponse;
+import com.ssafy.project.api.v1.transaction.dto.TransactionItem;
 import com.ssafy.project.api.v1.transaction.dto.TransactionSummaryResponse;
 import com.ssafy.project.api.v1.transaction.dto.TransactionUpdateRequest;
 import com.ssafy.project.api.v1.transaction.service.TransactionService;
+import com.ssafy.project.common.dto.CursorPage;
 import com.ssafy.project.security.auth.UserPrincipal;
 
 
@@ -96,6 +100,18 @@ public class TransactionController {
         }
 
         TransactionSummaryResponse res = transactionService.getSummary(userId, start, end);
+        return ResponseEntity.ok(res);
+    }
+	
+    @GetMapping
+    public ResponseEntity<CursorPage<TransactionItem>> getTransactions(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @ModelAttribute TransactionCursorRequest request
+    ) {
+        Long userId = principal.getUserId();
+
+        CursorPage<TransactionItem> res = transactionService.getTransactions(userId, request);
+
         return ResponseEntity.ok(res);
     }
 }

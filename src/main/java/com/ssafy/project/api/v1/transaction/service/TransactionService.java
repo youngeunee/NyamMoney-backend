@@ -4,9 +4,12 @@ import java.time.LocalDateTime;
 
 import com.ssafy.project.api.v1.transaction.dto.TransactionCreateRequest;
 import com.ssafy.project.api.v1.transaction.dto.TransactionCreateResponse;
+import com.ssafy.project.api.v1.transaction.dto.TransactionCursorRequest;
 import com.ssafy.project.api.v1.transaction.dto.TransactionDetailResponse;
+import com.ssafy.project.api.v1.transaction.dto.TransactionItem;
 import com.ssafy.project.api.v1.transaction.dto.TransactionSummaryResponse;
 import com.ssafy.project.api.v1.transaction.dto.TransactionUpdateRequest;
+import com.ssafy.project.common.dto.CursorPage;
 
 public interface TransactionService {
 
@@ -20,4 +23,5 @@ public interface TransactionService {
 
 	TransactionSummaryResponse getSummary(Long userId, LocalDateTime start, LocalDateTime end);
 	
+	public CursorPage<TransactionItem> getTransactions(Long userId, TransactionCursorRequest req);
 }

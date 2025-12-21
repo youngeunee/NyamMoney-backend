@@ -40,6 +40,8 @@ public class CategoryServiceImpl implements CategoryService{
         	return mapWholesaleCategory(industryMcls);
         
         case "음식":
+        	return mapFoodCategory(industryMcls);
+        	
         case "농업·임업·어업":
             return "식비";
         
@@ -73,6 +75,14 @@ public class CategoryServiceImpl implements CategoryService{
 		}
 	}
 	
+	private String mapFoodCategory(String industryMcls) {
+		if (industryMcls == null) return "식비";
+		
+		if (industryMcls.equals("비알코올")) return "카페·간식";
+
+		return "식비";
+	}
+
 	private String mapWholesaleCategory(String industryMcls) {
 		if (industryMcls == null) return "쇼핑";
 		
@@ -139,9 +149,11 @@ public class CategoryServiceImpl implements CategoryService{
             case "의료용품":
             case "의약품":
                 return "건강·의료";
-                
-            case "기타 식품":
+            
             case "비알코올 음료":
+            	return "카페·간식";
+            	
+            case "기타 식품":
             case "곡물·전분":
             case "낙농 빙과":
             case "과실·채소":

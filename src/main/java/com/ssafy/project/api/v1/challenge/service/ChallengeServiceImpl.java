@@ -1,10 +1,10 @@
 package com.ssafy.project.api.v1.challenge.service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+import org.apache.ibatis.javassist.NotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.ssafy.project.api.v1.challenge.dto.challenge.ChallengeCreateParam;
@@ -45,13 +45,17 @@ public class ChallengeServiceImpl implements ChallengeService {
 
 	// 단일 챌린지 상세정보 조회
 	@Override
-	public ChallengeDetailResponse getChallengeDetail(Long challengeId, Long userId) {
+	public ChallengeDetailResponse getChallengeDetail(Long challengeId, Long userId) throws NotFoundException {
 		// 챌린지 정보 조회
 		ChallengeDetailResponse challengeDetail = challengeMapper.selectChallengeDetail(challengeId);
         if (challengeDetail == null) {
             throw new IllegalArgumentException("존재하지 않는 챌린지입니다.");
         }
-
+//     // CLOSED 챌린지 접근 차단
+//        if (challengeDetail.getStatus() == ChallengeStatus.CLOSED) {
+//            throw new NotFoundException("챌린지를 찾을 수 없습니다.");
+//            // throw new ForbiddenException("삭제된 챌린지입니다.");
+//        }
         // 참여자 수 조회
         int participantCount = pMapper.countParticipants(challengeId);
 

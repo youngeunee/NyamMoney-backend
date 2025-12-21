@@ -1,5 +1,6 @@
 package com.ssafy.project.api.v1.challenge.mapper;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -21,7 +22,7 @@ public interface ChallengeMapper {
 
 	ChallengeStatus selectStatus(Long challengeId);
 
-	LocalDateTime selectStartsAt(Long challengeId);
+	LocalDate selectStartsAt(Long challengeId);
 
 	void updateChallenge(ChallengeUpdateParam param);
 

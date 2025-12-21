@@ -36,6 +36,7 @@
 	        resultType="com.ssafy.project.api.v1.challenge.dto.challenge.ChallengeDetailResponse">
 	  SELECT 
 	    c.challenge_id AS challengeId,
+	    c.user_id AS userId,
 	    c.title, 
 	    c.description, 
 	    c.starts_at AS startDate, 
@@ -78,7 +79,7 @@
         WHERE challenge_id = #{challengeId}
     </select>
 
-    <select id="selectStartsAt" resultType="java.time.LocalDateTime">
+    <select id="selectStartsAt" resultType="java.time.LocalDate">
         SELECT starts_at
         FROM challenges
         WHERE challenge_id = #{challengeId}
@@ -119,13 +120,13 @@
     <!-- 날짜에 따른 챌린지 상태 변경 -->
     <update id="updateChallengeStatusByDate">
 	    UPDATE challenges
-	    SET status = 
-	        CASE
-	            WHEN starts_at &gt; #{currentTime, jdbcType=TIMESTAMP} THEN 'UPCOMING'  <!-- 시작일이 오늘 이후면 UPCOMING -->
-	            WHEN ends_at &lt; #{currentTime, jdbcType=TIMESTAMP} THEN 'ENDED'       <!-- 종료일이 오늘 이전이면 ENDED -->
-	            ELSE 'ACTIVE'                                    <!-- 그 외에는 ACTIVE -->
-	        END
-	    WHERE status != 'CLOSED'  -- 이미 종료된 챌린지는 제외
+		    SET status =
+		        CASE
+		            WHEN CURDATE() &lt; DATE(starts_at) THEN 'UPCOMING'
+		            WHEN CURDATE() &gt; DATE(ends_at)   THEN 'ENDED'
+		            ELSE 'ACTIVE'
+		        END
+		    WHERE status != 'CLOSED'
 	</update>
     
     

@@ -1,6 +1,6 @@
 package com.ssafy.project.api.v1.challenge.dto.challenge;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import lombok.Data;
 
@@ -9,7 +9,7 @@ public class ChallengeUpdateParam {
 	private Long challengeId;
     private String title;
     private String description;
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private Integer periodDays;
 }

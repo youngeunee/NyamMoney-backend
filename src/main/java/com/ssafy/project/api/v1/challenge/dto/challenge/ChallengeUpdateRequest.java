@@ -1,6 +1,6 @@
 package com.ssafy.project.api.v1.challenge.dto.challenge;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -13,8 +13,8 @@ public class ChallengeUpdateRequest {
     @NotBlank
     private String description;
     @NotNull
-    private LocalDateTime startDate;
+    private LocalDate startDate;
     @NotNull
-    private LocalDateTime endDate;
+    private LocalDate endDate;
 
 }

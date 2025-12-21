@@ -66,6 +66,7 @@ public class ChallengeServiceImpl implements ChallengeService {
         // 응답 생성
         return new ChallengeDetailResponse(
             challengeDetail.getChallengeId(),
+            challengeDetail.getUserId(),
             challengeDetail.getTitle(),
             challengeDetail.getDescription(),
             challengeDetail.getStartDate(),
@@ -77,8 +78,13 @@ public class ChallengeServiceImpl implements ChallengeService {
 	
 	@Override
 	public ChallengeCreateResponse createChallenge(ChallengeCreateRequest request, Long userId) {
+		LocalDate today = LocalDate.now();
 		LocalDate start = request.getStartDate();
 	    LocalDate end = request.getEndDate();
+	    
+	    if(!start.isAfter(today)) {
+	    	throw new IllegalArgumentException("시작일은 내일부터 설정할 수 있습니다.");
+	    }
 	    
 	    if (end.isBefore(start)) {
 	        throw new IllegalArgumentException("종료일은 시작일보다 빠를 수 없습니다.");
@@ -110,26 +116,30 @@ public class ChallengeServiceImpl implements ChallengeService {
         if (!creatorId.equals(userId)) {
             throw new Exception("생성자만 챌린지를 수정할 수 있습니다.");
         }
+        // 기간 계산
+        LocalDate today = LocalDate.now();
+        LocalDate newStart = request.getStartDate();
+        LocalDate end = request.getEndDate();
         
 		// 상태 검증
         ChallengeStatus status = challengeMapper.selectStatus(challengeId);
         if (status != ChallengeStatus.UPCOMING) {
             throw new IllegalStateException("이미 시작되었거나 종료된 챌린지는 수정할 수 없습니다.");
         }
+        
+        if (!newStart.isAfter(today)) {
+        	throw new IllegalArgumentException("시작일은 오늘 이후 날짜여야 합니다.");
+        }
         // 시간 검증
-        LocalDateTime startsAt = challengeMapper.selectStartsAt(challengeId);
-        if (!LocalDateTime.now().isBefore(startsAt)) {
+        LocalDate startsAt = challengeMapper.selectStartsAt(challengeId);
+        if (!LocalDate.now().isBefore(startsAt)) {
             throw new IllegalStateException("이미 시작되었거나 종료된 챌린지는 수정할 수 없습니다.");
         }
-        // 기간 계산
-        LocalDate start = request.getStartDate().toLocalDate();
-	    LocalDate end = request.getEndDate().toLocalDate();
-
-        if (end.isBefore(start)) {
+        if (end.isBefore(newStart)) {
             throw new IllegalArgumentException("종료일은 시작일보다 빠를 수 없습니다.");
         }
 
-        int periodDays = (int) ChronoUnit.DAYS.between(start, end) + 1;
+        int periodDays = (int) ChronoUnit.DAYS.between(newStart, end) + 1;
 
         // Update 실행
         ChallengeUpdateParam param = new ChallengeUpdateParam();

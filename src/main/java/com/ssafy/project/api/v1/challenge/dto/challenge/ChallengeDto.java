@@ -1,6 +1,7 @@
 package com.ssafy.project.api.v1.challenge.dto.challenge;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.ssafy.project.domain.challenge.model.ChallengeStatus;
@@ -24,6 +25,6 @@ public class ChallengeDto {
     private LocalDateTime endsAt;
     private ChallengeStatus status;
     private BigDecimal entryFee;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private LocalDate createdAt;
+    private LocalDate updatedAt;
 }

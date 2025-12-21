@@ -1,5 +1,6 @@
 package com.ssafy.project.api.v1.challenge.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -74,10 +75,10 @@ public class ChallengeParticipantServiceImpl implements ChallengeParticipantServ
         }
 
         // 챌린지 시작일 확인
-        LocalDateTime startsAt = cMapper.selectStartsAt(challengeId);
+        LocalDate startsAt = cMapper.selectStartsAt(challengeId);
 
         // 시작 전 취소: REFUNDED로 상태 변경
-        if (startsAt.isAfter(LocalDateTime.now())) {
+        if (startsAt.isAfter(LocalDate.now())) {
             pMapper.updateParticipantStatus(challengeId, userId, ChallengeParticipantStatus.REFUNDED);
         }
         // 시작 후 취소: FAILED로 상태 변경

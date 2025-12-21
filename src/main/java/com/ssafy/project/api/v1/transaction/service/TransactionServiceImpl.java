@@ -12,6 +12,7 @@ import com.ssafy.project.api.v1.transaction.dto.TransactionCreateParam;
 import com.ssafy.project.api.v1.transaction.dto.TransactionCreateRequest;
 import com.ssafy.project.api.v1.transaction.dto.TransactionCreateResponse;
 import com.ssafy.project.api.v1.transaction.dto.TransactionCursorRequest;
+import com.ssafy.project.api.v1.transaction.dto.TransactionDailySummaryItem;
 import com.ssafy.project.api.v1.transaction.dto.TransactionDetailResponse;
 import com.ssafy.project.api.v1.transaction.dto.TransactionDto;
 import com.ssafy.project.api.v1.transaction.dto.TransactionItem;
@@ -128,26 +129,8 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     @Transactional(readOnly = true)
     public TransactionSummaryResponse getSummary(Long userId, LocalDateTime from, LocalDateTime to) {
-
         TransactionSummaryQuery q = new TransactionSummaryQuery(userId, from, to);
-
-        TransactionSummaryResponse res = transactionMapper.selectSummary(q);
-
-        if (res == null) {
-            return TransactionSummaryResponse.builder()
-                    .from(from)
-                    .to(to)
-                    .totalExpense(0L)
-                    .totalImpulseExpense(0L)
-                    .build();
-        }
-
-        return TransactionSummaryResponse.builder()
-                .from(from)
-                .to(to)
-                .totalExpense(res.getTotalExpense() == null ? 0L : res.getTotalExpense())
-                .totalImpulseExpense(res.getTotalImpulseExpense() == null ? 0L : res.getTotalImpulseExpense())
-                .build();
+        return transactionMapper.selectSummary(q);
     }
     
     @Override
@@ -201,5 +184,16 @@ public class TransactionServiceImpl implements TransactionService {
         long totalCount = transactionMapper.countTransactionsByPeriod(userId, from, to);
 
         return new CursorPage<>(rows, nextCursor, hasNext, totalCount);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TransactionDailySummaryItem> getDailySummary(
+            Long userId,
+            LocalDateTime from,
+            LocalDateTime to
+    ) {
+        TransactionSummaryQuery q = new TransactionSummaryQuery(userId, from, to);
+        return transactionMapper.selectDailySummary(q);
     }
 }

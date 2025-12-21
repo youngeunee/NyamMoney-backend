@@ -1,5 +1,6 @@
 package com.ssafy.project.api.v1.challenge.controller;
 
+import org.apache.ibatis.javassist.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -45,7 +46,7 @@ public class ChallengeController {
 	// 단일 챌린지 상세조회
 	@GetMapping("/{challengeId}")
 	public ResponseEntity<ChallengeDetailResponse> getChallengeDetail(@PathVariable Long challengeId,
-            @AuthenticationPrincipal UserPrincipal user) {
+            @AuthenticationPrincipal UserPrincipal user) throws NotFoundException {
 		Long userId = (user != null) ? user.getUserId() : null;
 		ChallengeDetailResponse response = challengeService.getChallengeDetail(challengeId, userId);
 		return ResponseEntity.ok(response);

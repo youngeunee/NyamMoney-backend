@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.project.api.v1.category.mapper.CategoryMapper">
+
+  <select id="selectAll" resultType="com.ssafy.project.api.v1.category.dto.CategoryItem">
+    SELECT
+      category_id AS categoryId,
+      name        AS name
+    FROM categories
+    ORDER BY category_id ASC
+  </select>
+
+  <select id="existsById" resultType="boolean">
+    SELECT EXISTS (
+      SELECT 1 FROM categories WHERE category_id = #{categoryId}
+    )
+  </select>
+
+</mapper>

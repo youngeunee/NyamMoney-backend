@@ -69,6 +69,24 @@
 	  <result property="impulseFlag"     column="impulse_flag"/>
 	  <result property="isRefund"        column="is_refund"/>
 	</resultMap>	
+	
+	<resultMap id="TransactionSummaryResponseMap"
+	           type="com.ssafy.project.api.v1.transaction.dto.TransactionSummaryResponse">
+	  <result property="from" column="from_at"/>
+	  <result property="to" column="to_at"/>
+	  <result property="totalExpense" column="total_expense"/>
+	  <result property="totalImpulseExpense" column="total_impulse_expense"/>
+	</resultMap>
+	
+	<resultMap id="TransactionDailySummaryItemMap"
+	           type="com.ssafy.project.api.v1.transaction.dto.TransactionDailySummaryItem">
+	  <result property="date" column="date"/>
+	  <result property="totalExpense" column="total_expense"/>
+	  <result property="totalImpulseExpense" column="total_impulse_expense"/>
+	</resultMap>
+
+
+
 
   <insert id="insertTransaction"
           parameterType="com.ssafy.project.api.v1.transaction.dto.TransactionCreateParam"
@@ -189,11 +207,13 @@
 	</update>
 	
 	<select id="selectSummary"
-        parameterType="com.ssafy.project.api.v1.transaction.dto.TransactionSummaryQuery"
-        resultType="com.ssafy.project.api.v1.transaction.dto.TransactionSummaryResponse">
-
-	  <![CDATA[
+	        parameterType="com.ssafy.project.api.v1.transaction.dto.TransactionSummaryQuery"
+	        resultMap="TransactionSummaryResponseMap">
+	
 	  SELECT
+	    #{from} AS from_at,
+	    #{to}   AS to_at,
+	
 	    COALESCE(SUM(
 	      CASE
 	        WHEN tx_type = 'EXPENSE'
@@ -202,7 +222,7 @@
 	        THEN amount
 	        ELSE 0
 	      END
-	    ), 0) AS totalExpense,
+	    ), 0) AS total_expense,
 	
 	    COALESCE(SUM(
 	      CASE
@@ -213,15 +233,16 @@
 	        THEN amount
 	        ELSE 0
 	      END
-	    ), 0) AS totalImpulseExpense
+	    ), 0) AS total_impulse_expense
 	
 	  FROM transactions
 	  WHERE user_id = #{userId}
-	    AND occurred_at >= #{from}
-	    AND occurred_at <= #{to}
+	    AND occurred_at <![CDATA[>=]]> #{from}
+	    AND occurred_at <![CDATA[<=]]> #{to}
 	    AND deleted_at IS NULL
-	  ]]>
 	</select>
+	
+	
 	
 	<select id="selectTransactionsCursor" resultMap="TransactionItemMap">
 	  SELECT
@@ -258,4 +279,43 @@
 	    AND t.occurred_at &gt;= #{from}
 	    AND t.occurred_at &lt;= #{to}
 	</select>
+	
+	<select id="selectDailySummary"
+	        parameterType="com.ssafy.project.api.v1.transaction.dto.TransactionSummaryQuery"
+	        resultMap="TransactionDailySummaryItemMap">
+	
+	  SELECT
+	    DATE(t.occurred_at) AS date,
+	
+	    COALESCE(SUM(
+	      CASE
+	        WHEN t.tx_type = 'EXPENSE'
+	             AND t.is_refund = 0
+	             AND t.canceled_at IS NULL
+	        THEN t.amount
+	        ELSE 0
+	      END
+	    ), 0) AS total_expense,
+	
+	    COALESCE(SUM(
+	      CASE
+	        WHEN t.tx_type = 'EXPENSE'
+	             AND t.impulse_flag = 1
+	             AND t.is_refund = 0
+	             AND t.canceled_at IS NULL
+	        THEN t.amount
+	        ELSE 0
+	      END
+	    ), 0) AS total_impulse_expense
+	
+	  FROM transactions t
+	  WHERE t.user_id = #{userId}
+	    AND t.occurred_at <![CDATA[>=]]> #{from}
+	    AND t.occurred_at <![CDATA[<=]]> #{to}
+	    AND t.deleted_at IS NULL
+	
+	  GROUP BY DATE(t.occurred_at)
+	  ORDER BY DATE(t.occurred_at) ASC
+	</select>	
+	
 </mapper>

@@ -52,4 +52,13 @@ public interface TransactionMapper {
 		List<TransactionDailySummaryItem> selectDailySummary(TransactionSummaryQuery query);
 
 		int upsertNhCardTransaction(TransactionUpsertParam p);
+
+		List<String> findExistingNhAuthNos(
+			    @Param("userId") Long userId,
+			    @Param("source") String source,
+			    @Param("authNos") List<String> authNos
+			);
+
+			int insertNhCardTransaction(TransactionUpsertParam p);
+		
 }

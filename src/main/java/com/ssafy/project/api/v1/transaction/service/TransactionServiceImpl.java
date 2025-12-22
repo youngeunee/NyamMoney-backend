@@ -3,7 +3,11 @@ package com.ssafy.project.api.v1.transaction.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -214,46 +218,80 @@ public class TransactionServiceImpl implements TransactionService {
     @Transactional
     public int syncNhTransactions(Long userId, LocalDate fromDate, LocalDate toDate) {
 
-        // 1) NH 승인내역 수집 (외부 데이터)
-        List<NhCardApprovalItem> items =
-                nhCardService.collect(userId, fromDate, toDate);
+        // 1) NH 승인내역 수집
+        List<NhCardApprovalItem> items = nhCardService.collect(userId, fromDate, toDate);
+        if (items == null || items.isEmpty()) return 0;
+
+        final String SOURCE = "nhcard";
+
+        // 2) authNo 목록 뽑기 (null/blank 제외)
+        List<String> authNos = items.stream()
+            .map(NhCardApprovalItem::getCardAthzNo)
+            .filter(no -> no != null && !no.isBlank())
+            .distinct()
+            .toList();
+
+        // 3) 이미 DB에 있는 authNo를 한 번에 조회
+        Set<String> existing = authNos.isEmpty()
+            ? Set.of()
+            : new HashSet<>(transactionMapper.findExistingNhAuthNos(userId, SOURCE, authNos));
+
+        // 4) (선택) merchantName 기준 분류 결과를 sync 1회 동안만 메모리 캐시
+        Map<String, CategoryPick> categoryCache = new HashMap<>();
 
         int savedCount = 0;
 
-        // 2) NH 승인내역 → 우리 시스템 트랜잭션으로 변환 + 분류 + 저장
         for (NhCardApprovalItem it : items) {
 
-            // 2-1) NH → TransactionUpsertParam 변환
-            TransactionUpsertParam p = mapToUpsertParam(it, userId);
-
-            String merchantName = p.getMerchantNameRaw();
-
-            // 2-2) ① 브랜드 DB 기반 RULE 분류
-            Long categoryId = brandService.findBrand(merchantName);
-            if (categoryId != null) {
-                p.setCategoryId(categoryId);
-                p.setCategoryMethod("RULE");
-            } 
-            // 2-3) ② 벡터 기반 분류
-            else {
-                categoryId = categoryService.findVector(merchantName);
-                if (categoryId != null) {
-                    p.setCategoryId(categoryId);
-                    p.setCategoryMethod("VECTOR");
-                } 
-                // 2-4) ③ 미분류 (AI tools 예정)
-                else {
-                    p.setCategoryId(10L);
-                    p.setCategoryMethod("NONE");
-                }
+            String authNo = it.getCardAthzNo();
+            if (authNo == null || authNo.isBlank()) {
+                // authNo가 없으면 유니크키로 중복판정이 안됨 → 정책 결정 필요
+                // 일단 스킵하거나, 다른 키로 중복판정(occurredAt+amount+merchant) 등을 쓰는 방식으로 가야 함
+                continue;
             }
 
-            // 2-5) upsert 저장
-            savedCount += transactionMapper.upsertNhCardTransaction(p);
+            // 5) 이미 있으면 스킵
+            if (existing.contains(authNo)) continue;
+
+            TransactionUpsertParam p = mapToUpsertParam(it, userId);
+            p.setSource(SOURCE);
+            p.setCardAuthNo(authNo);
+
+            String merchantName = p.getMerchantNameRaw();
+            if (merchantName == null || merchantName.isBlank()) {
+                p.setCategoryId(10L);
+                p.setCategoryMethod("NONE");
+            } else {
+                CategoryPick pick = categoryCache.get(merchantName);
+
+                if (pick == null) {
+                    // 6) RULE → VECTOR → NONE
+                    Long categoryId = brandService.findBrand(merchantName);
+                    if (categoryId != null) {
+                        pick = new CategoryPick(categoryId, "RULE");
+                    } else {
+                        categoryId = categoryService.findVector(merchantName);
+                        if (categoryId != null) pick = new CategoryPick(categoryId, "VECTOR");
+                        else pick = new CategoryPick(10L, "NONE");
+                    }
+                    categoryCache.put(merchantName, pick);
+                }
+
+                p.setCategoryId(pick.categoryId());
+                p.setCategoryMethod(pick.method());
+            }
+
+            // 7) insert만 수행
+            savedCount += transactionMapper.insertNhCardTransaction(p);
+
+            // 8) 이번 실행 중 중복 방지
+            existing.add(authNo);
         }
 
         return savedCount;
     }
+
+    private record CategoryPick(Long categoryId, String method) {}
 
 
     private TransactionUpsertParam mapToUpsertParam(

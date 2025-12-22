@@ -376,4 +376,32 @@
             canceled_at         = VALUES(canceled_at),
             updated_at          = CURRENT_TIMESTAMP
     </insert>
+<select id="findExistingNhAuthNos" resultType="string">
+  SELECT card_auth_no
+  FROM transactions
+  WHERE user_id = #{userId}
+    AND source = #{source}
+    AND card_auth_no IN
+    <foreach collection="authNos" item="no" open="(" separator="," close=")">
+      #{no}
+    </foreach>
+</select>
+
+	<insert id="insertNhCardTransaction" parameterType="com.ssafy.project.api.v1.integration.nhcard.dto.TransactionUpsertParam">
+	  INSERT INTO transactions (
+	    user_id, occurred_at, amount, tx_type,
+	    category_id, category_method,
+	    merchant_name_raw, payment_method, memo, tags,
+	    source, card_auth_no, sales_type, installment_months, currency_code,
+	    impulse_flag, is_refund, canceled_at
+	  ) VALUES (
+	    #{userId}, #{occurredAt}, #{amount}, #{txType},
+	    #{categoryId}, #{categoryMethod},
+	    #{merchantNameRaw}, #{paymentMethod}, #{memo}, #{tags},
+	    #{source}, #{cardAuthNo}, #{salesType}, #{installmentMonths}, #{currencyCode},
+	    #{impulseFlag}, #{isRefund}, #{canceledAt}
+	  )
+	</insert>
+
+
 </mapper>

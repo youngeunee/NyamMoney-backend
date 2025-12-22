@@ -1,6 +1,7 @@
 package com.ssafy.project.api.v1.transaction.controller;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ssafy.project.api.v1.transaction.dto.TransactionCreateRequest;
 import com.ssafy.project.api.v1.transaction.dto.TransactionCreateResponse;
 import com.ssafy.project.api.v1.transaction.dto.TransactionCursorRequest;
+import com.ssafy.project.api.v1.transaction.dto.TransactionDailySummaryItem;
 import com.ssafy.project.api.v1.transaction.dto.TransactionDetailResponse;
 import com.ssafy.project.api.v1.transaction.dto.TransactionItem;
 import com.ssafy.project.api.v1.transaction.dto.TransactionSummaryResponse;
@@ -111,6 +113,30 @@ public class TransactionController {
         Long userId = principal.getUserId();
 
         CursorPage<TransactionItem> res = transactionService.getTransactions(userId, request);
+
+        return ResponseEntity.ok(res);
+    }
+    
+    @GetMapping("/daily-summary")
+    public ResponseEntity<List<TransactionDailySummaryItem>> getDailySummary(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam(required = false) LocalDateTime from,
+            @RequestParam(required = false) LocalDateTime to
+    ) {
+        Long userId = principal.getUserId();
+
+        // 기본값: to=now, from=to가 속한 달 1일 00:00:00
+        LocalDateTime end = (to != null) ? to : LocalDateTime.now();
+        LocalDateTime start = (from != null)
+                ? from
+                : end.toLocalDate().withDayOfMonth(1).atStartOfDay();
+
+        if (start.isAfter(end)) {
+            throw new IllegalArgumentException("from은 to보다 이후일 수 없습니다.");
+        }
+
+        List<TransactionDailySummaryItem> res =
+                transactionService.getDailySummary(userId, start, end);
 
         return ResponseEntity.ok(res);
     }

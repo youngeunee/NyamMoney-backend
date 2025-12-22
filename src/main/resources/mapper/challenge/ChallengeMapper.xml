@@ -4,68 +4,117 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ssafy.project.api.v1.challenge.mapper.ChallengeMapper">
 
-    <select id="selectChallengeList" parameterType="long"
+    <select id="selectChallengeList"
         resultType="com.ssafy.project.api.v1.challenge.dto.challenge.ChallengeListItem">
-	  SELECT
-	    c.challenge_id      AS challengeId,
-	    c.title,
-	    c.description,
-	    c.starts_at        AS startDate,
-	    c.ends_at          AS endDate,
-	    c.status            AS status,
-	
-	    COUNT(cp.user_id)   AS participantCount,
-	
-	    CASE
-	      WHEN #{userId} IS NULL THEN false
-	      WHEN SUM(CASE WHEN cp.user_id = #{userId} THEN 1 ELSE 0 END) > 0
-	        THEN true
-	      ELSE false
-	    END                 AS isJoined
-	
-	  FROM challenges c
-	  LEFT JOIN challenge_participants cp
-	    ON c.challenge_id = cp.challenge_id
-	    AND cp.status = 'JOINED'
-	
-	  GROUP BY c.challenge_id
+
+		SELECT
+		  c.challenge_id AS challengeId,
+		  c.title,
+		  c.description,
+		  c.starts_at    AS startDate,
+		  c.ends_at      AS endDate,
+		  c.status       AS status,
+		
+		  /* 상태별 참여자 수 */
+		  CASE
+		    WHEN c.status IN ('UPCOMING', 'ACTIVE') THEN (
+		      SELECT COUNT(*)
+		      FROM challenge_participants cp
+		      WHERE cp.challenge_id = c.challenge_id
+		        AND cp.status = 'JOINED'
+		    )
+		
+		    WHEN c.status = 'ENDED' THEN (
+		      SELECT COUNT(*)
+		      FROM challenge_participants cp
+		      WHERE cp.challenge_id = c.challenge_id
+		        AND cp.status IN ('COMPLETED', 'FAILED')
+		    )
+		
+		    WHEN c.status = 'CLOSED' THEN (
+		      SELECT COUNT(*)
+		      FROM challenge_participants cp
+		      WHERE cp.challenge_id = c.challenge_id
+		        AND cp.status = 'REFUNDED'
+		    )
+		
+		    ELSE 0
+		  END AS participantCount,
+		
+		  /* 현재 사용자 참여 여부 */
+		  CASE
+		    WHEN EXISTS (
+		      SELECT 1
+		      FROM challenge_participants cp2
+		      WHERE cp2.challenge_id = c.challenge_id
+		        AND cp2.user_id = #{userId}
+		        AND (
+		          (c.status IN ('UPCOMING','ACTIVE') AND cp2.status = 'JOINED')
+		          OR (c.status = 'ENDED' AND cp2.status IN ('COMPLETED','FAILED'))
+		          OR (c.status = 'CLOSED' AND cp2.status = 'REFUNDED')
+		        )
+		    )
+		    THEN true
+		    ELSE false
+		  END AS joined
+		
+		FROM challenges c
+		ORDER BY c.created_at DESC
 	</select>
+
+
     
 	<!-- 단일 챌린지 상세 조회 -->
 	<select id="selectChallengeDetail"
-	        resultType="com.ssafy.project.api.v1.challenge.dto.challenge.ChallengeDetailResponse">
-	  SELECT 
-	    c.challenge_id AS challengeId,
-	    c.user_id AS userId,
-	    c.title, 
-	    c.description, 
-	    c.starts_at AS startDate, 
-	    c.ends_at AS endDate,
-	    
-	    COALESCE(COUNT(
-	      CASE WHEN cp.status = 'JOINED' THEN 1 END
-	    ), 0) AS participantCount,
+        resultMap="ChallengeDetailMap">
+	    SELECT
+	        c.challenge_id AS challengeId,
+	        c.user_id      AS userId,
+	        c.title,
+	        c.description,
+	        c.starts_at    AS startDate,
+	        c.ends_at      AS endDate,
+	        c.status       AS status,
 	
-	    CASE 
-	      WHEN EXISTS (
-	        SELECT 1
-	        FROM challenge_participants cp2
-	        WHERE cp2.challenge_id = c.challenge_id
-	          AND cp2.user_id = #{userId}
-	          AND cp2.status = 'JOINED'
-	      ) THEN true
-	      ELSE false
-	    END AS isJoined,
+	        /* 참여자 수 */
+	        COALESCE(SUM(
+	            CASE
+	                WHEN c.status IN ('UPCOMING', 'ACTIVE')
+	                     AND cp.status = 'JOINED' THEN 1
 	
-	    c.status AS status
+	                WHEN c.status = 'ENDED'
+	                     AND cp.status IN ('COMPLETED', 'FAILED') THEN 1
 	
-	  FROM challenges c
-	  LEFT JOIN challenge_participants cp
-	    ON cp.challenge_id = c.challenge_id
-	   AND cp.status = 'JOINED'
-	  WHERE c.challenge_id = #{challengeId}
-	  GROUP BY c.challenge_id
+	                ELSE 0
+	            END
+	        ), 0) AS participantCount,
+	
+	        /* 현재 사용자 참여 여부 */
+	        CASE
+	            WHEN EXISTS (
+	                SELECT 1
+	                FROM challenge_participants cp2
+	                WHERE cp2.challenge_id = c.challenge_id
+	                  AND cp2.user_id = #{userId}
+	                  AND (
+	                        (c.status IN ('UPCOMING', 'ACTIVE') AND cp2.status = 'JOINED')
+	                     OR (c.status = 'ENDED' AND cp2.status IN ('COMPLETED', 'FAILED'))
+	                  )
+	            )
+	            THEN true
+	            ELSE false
+	        END AS joined
+	
+	    FROM challenges c
+	    LEFT JOIN challenge_participants cp
+	        ON cp.challenge_id = c.challenge_id
+	
+	    WHERE c.challenge_id = #{challengeId}
+	
+	    GROUP BY c.challenge_id
 	</select>
+
+
 
     
     <insert id="insertChallenge" useGeneratedKeys="true" keyProperty="challengeId">
@@ -131,11 +180,14 @@
     
     
     <resultMap id="ChallengeDetailMap"
-    type="com.ssafy.project.api.v1.challenge.dto.challenge.ChallengeDetailResponse">
-	    <id property="challengeId" column="challenge_id"/>
-	    <result property="title" column="title"/>
+	  type="com.ssafy.project.api.v1.challenge.dto.challenge.ChallengeDetailResponse">
+	    <id property="challengeId" column="challengeId"/>
+	    <result property="userId"      column="userId"/>
+	    <result property="title"       column="title"/>
 	    <result property="description" column="description"/>
-	    <result property="startDate" column="starts_at"/>
-	    <result property="endDate" column="ends_at"/>
+	    <result property="startDate"   column="startDate"/>
+	    <result property="endDate"     column="endDate"/>
+	    <result property="status"      column="status"/>
 	</resultMap>
+
 </mapper>

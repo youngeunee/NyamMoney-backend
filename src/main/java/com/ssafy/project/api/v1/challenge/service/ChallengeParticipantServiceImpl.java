@@ -46,11 +46,18 @@ public class ChallengeParticipantServiceImpl implements ChallengeParticipantServ
         // 이미 참여한 경우 체크, REFUNDED상태는 재참여 가능
         int exists = pMapper.existsParticipant(userId, challengeId);
         if (exists > 0) {
+        	//pMapper.updateParticipantStatus(challengeId, userId, ChallengeParticipantStatus.JOINED);
         	// 참여자 상태 확인
         	ChallengeParticipantStatus pStatus = pMapper.selectParticipantStatus(challengeId, userId);
-        	pMapper.updateParticipantStatus(challengeId, userId, ChallengeParticipantStatus.JOINED);
+        	if (pStatus == ChallengeParticipantStatus.FAILED) {
+                throw new IllegalStateException("진행 중 취소한 챌린지는 다시 참여할 수 없습니다.");
+            }
         	if (pStatus != ChallengeParticipantStatus.REFUNDED) {
-                throw new IllegalStateException("이미 참여한 챌린지입니다.");
+        		throw new IllegalStateException("이미 참여한 챌린지입니다.");
+        	}
+        	// REFUNDED만 재참여 허용
+            if (pStatus == ChallengeParticipantStatus.REFUNDED) {
+                pMapper.updateParticipantStatus(challengeId, userId, ChallengeParticipantStatus.JOINED);
             }
         } else {
         	// 참여 처리

@@ -1,10 +1,10 @@
 package com.ssafy.project.api.v1.challenge.service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+import org.apache.ibatis.javassist.NotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.ssafy.project.api.v1.challenge.dto.challenge.ChallengeCreateParam;
@@ -43,38 +43,52 @@ public class ChallengeServiceImpl implements ChallengeService {
         return new ChallengeListResponse(items);
 	}
 
-	// 단일 챌린지 상세정보 조회
+//	// 단일 챌린지 상세정보 조회
+//	@Override
+//	public ChallengeDetailResponse getChallengeDetail(Long challengeId, Long userId) throws NotFoundException {
+//		// 챌린지 정보 조회
+//		ChallengeDetailResponse challengeDetail = challengeMapper.selectChallengeDetail(challengeId);
+//        if (challengeDetail == null) {
+//            throw new IllegalArgumentException("존재하지 않는 챌린지입니다.");
+//        }
+////     // CLOSED 챌린지 접근 차단
+////        if (challengeDetail.getStatus() == ChallengeStatus.CLOSED) {
+////            throw new NotFoundException("챌린지를 찾을 수 없습니다.");
+////            // throw new ForbiddenException("삭제된 챌린지입니다.");
+////        }
+//        // 참여자 수 조회 - JOINED 상태만 가져오
+//        int participantCount = pMapper.countParticipants(challengeId);
+//
+//        // 사용자 참여 여부 확인 (로그인된 사용자가 참여한 챌린지인지)
+//        boolean isJoined = false;
+//        if (userId != null) {
+//            isJoined = pMapper.JOINEDParticipant(userId, challengeId) > 0;
+////            log.debug("count?: " + pMapper.JOINEDParticipant(userId, challengeId));
+////            log.debug("isJoined?" + isJoined);
+//        }
+//
+//        // 응답 생성
+//        return new ChallengeDetailResponse(
+//            challengeDetail.getChallengeId(),
+//            challengeDetail.getUserId(),
+//            challengeDetail.getTitle(),
+//            challengeDetail.getDescription(),
+//            challengeDetail.getStartDate(),
+//            challengeDetail.getEndDate(),
+//            participantCount,
+//            isJoined,
+//            challengeDetail.getStatus());
+//	}
 	@Override
 	public ChallengeDetailResponse getChallengeDetail(Long challengeId, Long userId) {
-		// 챌린지 정보 조회
-		ChallengeDetailResponse challengeDetail = challengeMapper.selectChallengeDetail(challengeId);
-        if (challengeDetail == null) {
-            throw new IllegalArgumentException("존재하지 않는 챌린지입니다.");
-        }
-
-        // 참여자 수 조회
-        int participantCount = pMapper.countParticipants(challengeId);
-
-        // 사용자 참여 여부 확인 (로그인된 사용자가 참여한 챌린지인지)
-        boolean isJoined = false;
-        if (userId != null) {
-            isJoined = pMapper.JOINEDParticipant(userId, challengeId) > 0;
-//            log.debug("count?: " + pMapper.JOINEDParticipant(userId, challengeId));
-//            log.debug("isJoined?" + isJoined);
-        }
-
-        // 응답 생성
-        return new ChallengeDetailResponse(
-            challengeDetail.getChallengeId(),
-            challengeDetail.getUserId(),
-            challengeDetail.getTitle(),
-            challengeDetail.getDescription(),
-            challengeDetail.getStartDate(),
-            challengeDetail.getEndDate(),
-            participantCount,
-            isJoined,
-            challengeDetail.getStatus());
+		ChallengeDetailResponse response =
+				challengeMapper.selectChallengeDetail(challengeId, userId);
+		if (response == null) {
+			throw new IllegalArgumentException("존재하지 않는 챌린지입니다.");
+		}
+		return response;
 	}
+
 	
 	@Override
 	public ChallengeCreateResponse createChallenge(ChallengeCreateRequest request, Long userId) {

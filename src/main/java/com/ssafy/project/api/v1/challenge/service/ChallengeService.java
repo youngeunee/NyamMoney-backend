@@ -1,5 +1,7 @@
 package com.ssafy.project.api.v1.challenge.service;
 
+import org.apache.ibatis.javassist.NotFoundException;
+
 import com.ssafy.project.api.v1.challenge.dto.challenge.ChallengeCreateRequest;
 import com.ssafy.project.api.v1.challenge.dto.challenge.ChallengeCreateResponse;
 import com.ssafy.project.api.v1.challenge.dto.challenge.ChallengeDetailResponse;
@@ -18,6 +20,6 @@ public interface ChallengeService {
 
 	void deleteChallenge(Long challengeId, Long userId) throws Exception;
 
-	ChallengeDetailResponse getChallengeDetail(Long challengeId, Long userId);
+	ChallengeDetailResponse getChallengeDetail(Long challengeId, Long userId) throws NotFoundException;
 
 }

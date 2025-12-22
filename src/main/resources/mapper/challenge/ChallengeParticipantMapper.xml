@@ -84,6 +84,7 @@
 	    WHERE challenge_id = #{challengeId}
 	</select>
 	
+	
 	<!-- 특정 챌린지 참여 중인 사용자 조회 -->
 	<select id="selectParticipantsByChallengeId"
         resultType="com.ssafy.project.api.v1.challenge.dto.participant.ChallengeParticipantItem">

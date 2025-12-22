@@ -1,4 +1,4 @@
-package com.ssafy.project.api.v1.category.Service;
+package com.ssafy.project.api.v1.category.service;
 
 import java.util.List;
 

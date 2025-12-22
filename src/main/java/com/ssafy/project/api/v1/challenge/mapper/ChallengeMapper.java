@@ -34,6 +34,7 @@ public interface ChallengeMapper {
 
 	List<Long> selectExpiredChallengeIds(LocalDateTime now);
 
-	ChallengeDetailResponse selectChallengeDetail(Long challengeId);
+	ChallengeDetailResponse selectChallengeDetail(@Param("challengeId") Long challengeId,
+		    @Param("userId") Long userId);
 
 }

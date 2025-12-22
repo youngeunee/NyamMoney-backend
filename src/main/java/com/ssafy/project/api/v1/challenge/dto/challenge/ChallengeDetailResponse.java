@@ -6,8 +6,10 @@ import com.ssafy.project.domain.challenge.model.ChallengeStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 public class ChallengeDetailResponse {
 	private Long challengeId;

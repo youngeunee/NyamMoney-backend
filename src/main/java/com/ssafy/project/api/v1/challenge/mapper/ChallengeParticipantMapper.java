@@ -33,4 +33,6 @@ public interface ChallengeParticipantMapper {
 	// 특정 챌린지 참여중인 사용자 목록 조회
 	List<ChallengeParticipantItem> selectParticipantsByChallengeId(Long challengeId);
 
+	int countParticipantJOINED(Long challengeId);
+
 }

@@ -9,8 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ssafy.project.api.v1.comment.dto.CommentCreateRequest;
 import com.ssafy.project.api.v1.comment.dto.CommentCreateResponse;
 import com.ssafy.project.api.v1.comment.dto.CommentDetailResponse;
+import com.ssafy.project.api.v1.comment.dto.CommentCursorResponse;
 import com.ssafy.project.api.v1.comment.dto.CommentDto;
 import com.ssafy.project.api.v1.comment.dto.CommentListResponse;
+import com.ssafy.project.api.v1.comment.dto.CommentWithPostResponse;
 import com.ssafy.project.api.v1.comment.dto.CommentUpdateRequest;
 import com.ssafy.project.api.v1.comment.mapper.CommentMapper;
 
@@ -86,6 +88,27 @@ public class CommentServiceImpl implements CommentService {
 		rsp.setTotalElements(totalElements);
 		rsp.setTotalPages(totalPages);
 		
+		return rsp;
+	}
+
+	@Override
+	public CommentCursorResponse getUserComments(Long userId, Long cursor, int size) {
+		int fetchSize = size + 1;
+		// cursor 기반으로 size+1 조회
+		List<CommentWithPostResponse> list = commentMapper.selectUserComments(userId, cursor, fetchSize);
+		boolean hasNext = false;
+		Long nextCursor = null;
+		if (list.size() > size) {
+			hasNext = true;
+			CommentWithPostResponse last = list.remove(list.size() - 1);
+			nextCursor = last.getCommentId();
+		}
+
+		CommentCursorResponse rsp = new CommentCursorResponse();
+		rsp.setItems(list);
+		rsp.setHasNext(hasNext);
+		rsp.setNextCursor(nextCursor);
+		rsp.setTotalCount(commentMapper.countUserComments(userId));
 		return rsp;
 	}
 

@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.ssafy.project.api.v1.comment.dto.CommentDetailResponse;
 import com.ssafy.project.api.v1.comment.dto.CommentDto;
+import com.ssafy.project.api.v1.comment.dto.CommentWithPostResponse;
 
 
 @Mapper
@@ -23,6 +24,12 @@ public interface CommentMapper {
 	void softDeleteByPostId(Long postId); // 게시글 삭제시 댓글도 함께 삭
 
 	int countComments(Long postId);
+
+	List<CommentWithPostResponse> selectUserComments(@Param("userId") Long userId,
+			@Param("cursor") Long cursor,
+			@Param("sizePlusOne") int sizePlusOne);
+
+	long countUserComments(@Param("userId") Long userId);
 
 	List<CommentDetailResponse> getCommentList(@Param("postId")Long postId,
 			@Param("limit") int size,

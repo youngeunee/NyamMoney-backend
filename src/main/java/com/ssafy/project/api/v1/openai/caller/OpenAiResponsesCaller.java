@@ -19,16 +19,17 @@ public class OpenAiResponsesCaller {
             @Value("${ssafy.gms.api-key}") String apiKey
     ) {
         this.restClient = builder
-                .baseUrl(baseUrl)
+                .baseUrl(baseUrl) // 반드시 .../v1
                 .defaultHeader("Authorization", "Bearer " + apiKey)
-                .defaultHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
-                .defaultHeader("Accept", MediaType.APPLICATION_JSON_VALUE)
                 .build();
     }
 
     public OpenAiResponsesResponse call(OpenAiResponsesRequest request) {
         return restClient.post()
-                .uri("/responses")
+                // Use relative path to respect baseUrl (leading slash would drop /gmsapi/api.openai.com/v1)
+                .uri("responses")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
                 .body(request)
                 .retrieve()
                 .body(OpenAiResponsesResponse.class);

@@ -19,6 +19,7 @@ import com.ssafy.project.api.v1.category.service.CategoryService;
 import com.ssafy.project.api.v1.integration.nhcard.dto.NhCardApprovalItem;
 import com.ssafy.project.api.v1.integration.nhcard.dto.TransactionUpsertParam;
 import com.ssafy.project.api.v1.integration.nhcard.service.NhCardService;
+import com.ssafy.project.api.v1.openai.service.MerchantCategoryAiService;
 import com.ssafy.project.api.v1.transaction.dto.TransactionCreateParam;
 import com.ssafy.project.api.v1.transaction.dto.TransactionCreateRequest;
 import com.ssafy.project.api.v1.transaction.dto.TransactionCreateResponse;
@@ -43,16 +44,18 @@ public class TransactionServiceImpl implements TransactionService {
     private final BrandService brandService;
     private final CategoryService categoryService;
     private final NhCardService nhCardService;
+    private final MerchantCategoryAiService merchantCategoryAiService;
     
 	private static final int DEFAULT_SIZE = 10;
     private static final int MAX_SIZE = 50;
     
-    public TransactionServiceImpl(TransactionMapper transactionMapper, CategoryMapper categoryMapper, BrandService brandService, CategoryService categoryService, NhCardService nhCardService) {
+    public TransactionServiceImpl(TransactionMapper transactionMapper, CategoryMapper categoryMapper, BrandService brandService, CategoryService categoryService, NhCardService nhCardService, MerchantCategoryAiService merchantCategoryAiService) {
     	this.transactionMapper = transactionMapper;
     	this.categoryMapper = categoryMapper;
     	this.brandService = brandService;
     	this.categoryService = categoryService;
     	this.nhCardService = nhCardService;
+    	this.merchantCategoryAiService = merchantCategoryAiService;
     }
 	
     @Override
@@ -232,10 +235,11 @@ public class TransactionServiceImpl implements TransactionService {
             .toList();
 
         // 3) 이미 DB에 있는 authNo를 한 번에 조회
-        Set<String> existing = authNos.isEmpty()
-            ? Set.of()
-            : new HashSet<>(transactionMapper.findExistingNhAuthNos(userId, SOURCE, authNos));
-
+        Set<String> existing = new HashSet<>(
+        	    authNos.isEmpty()
+        	        ? List.of()
+        	        : transactionMapper.findExistingNhAuthNos(userId, SOURCE, authNos)
+        	);
         // 4) (선택) merchantName 기준 분류 결과를 sync 1회 동안만 메모리 캐시
         Map<String, CategoryPick> categoryCache = new HashMap<>();
 
@@ -272,7 +276,15 @@ public class TransactionServiceImpl implements TransactionService {
                     } else {
                         categoryId = categoryService.findVector(merchantName);
                         if (categoryId != null) pick = new CategoryPick(categoryId, "VECTOR");
-                        else pick = new CategoryPick(10L, "NONE");
+                        else {
+                            try {
+                                String code = merchantCategoryAiService.classifySingleDigitCode(merchantName); // "0"~"9"
+                                Long aiCategoryId = mapCodeToCategoryId(code); // 1~10
+                                pick = new CategoryPick(aiCategoryId, "OPENAI");
+                            } catch (Exception e) {
+                                pick = new CategoryPick(10L, "NONE");
+                            }
+                        }
                     }
                     categoryCache.put(merchantName, pick);
                 }
@@ -291,7 +303,15 @@ public class TransactionServiceImpl implements TransactionService {
         return savedCount;
     }
 
-    private record CategoryPick(Long categoryId, String method) {}
+    private Long mapCodeToCategoryId(String code) {
+        if (code == null) return 10L;
+        String c = code.trim();
+        if (!c.matches("^[0-9]$")) return 10L; // 방어
+        if ("0".equals(c)) return 10L;         // 기타
+        return Long.parseLong(c);              // 1~9
+    }
+
+	private record CategoryPick(Long categoryId, String method) {}
 
 
     private TransactionUpsertParam mapToUpsertParam(

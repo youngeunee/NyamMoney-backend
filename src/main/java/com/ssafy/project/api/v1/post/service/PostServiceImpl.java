@@ -91,7 +91,14 @@ public class PostServiceImpl implements PostService {
 	@Override
 	public PostListResponse getPostList(Long boardId, int page, int size, String sort, String keyword) {
 		int offset = page * size;
-        String sortQuery = (sort != null && !sort.isBlank()) ? sort : "created_at desc";
+        String sortQuery;
+        if ("comments".equalsIgnoreCase(sort)) {
+        	sortQuery = "comment_count DESC, p.created_at DESC";
+        } else if ("likes".equalsIgnoreCase(sort)) {
+        	sortQuery = "likes_computed DESC, p.created_at DESC";
+        } else {
+        	sortQuery = "p.created_at DESC";
+        }
 
         List<PostDetailResponse> posts = postMapper.findPostList(boardId, offset, size, sortQuery, keyword);
         long totalElements = postMapper.countPostList(boardId, keyword);

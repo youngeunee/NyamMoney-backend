@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafy.project.api.v1.openai.caller.OpenAiResponsesCaller;
 import com.ssafy.project.api.v1.openai.dto.ContentItemDto;
 import com.ssafy.project.api.v1.openai.dto.InputMessageDto;
@@ -11,14 +13,18 @@ import com.ssafy.project.api.v1.openai.dto.OpenAiResponsesRequest;
 import com.ssafy.project.api.v1.openai.dto.OpenAiResponsesResponse;
 import com.ssafy.project.api.v1.openai.dto.OutputItemDto;
 import com.ssafy.project.api.v1.openai.dto.ToolDto;
+import com.ssafy.project.api.v1.openai.dto.UserLocationDto;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MerchantCategoryAiService {
 
     private final OpenAiResponsesCaller openAiResponsesCaller;
+    private final ObjectMapper objectMapper;
 
     public String classifySingleDigitCode(String merchantName) {
 
@@ -37,8 +43,14 @@ public class MerchantCategoryAiService {
                         ToolDto.builder().type("web_search").build()
                 ))
                 .build();
-
+        try {
+			log.info("[OPENAI][REQ] {}", objectMapper.writeValueAsString(req));
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         OpenAiResponsesResponse resp = openAiResponsesCaller.call(req);
+        log.info("[OPENAI][RAW RESPONSE] {}", resp);
 
         String raw = extractOutputText(resp);
         String code = raw == null ? "" : raw.trim();

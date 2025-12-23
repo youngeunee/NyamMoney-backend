@@ -1,15 +1,24 @@
 package com.ssafy.project.config;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
+import com.ssafy.project.api.v1.challenge.chat.interceptor.ChatSubscribeInterceptor;
+import com.ssafy.project.api.v1.challenge.chat.interceptor.JwtHandshakeInterceptor;
+
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
-
+	private final JwtHandshakeInterceptor jwtHandshakeInterceptor;
+	private final ChatSubscribeInterceptor chatSubscribeInterceptor;
+	public WebSocketConfig(JwtHandshakeInterceptor jwtHandshakeInterceptor, ChatSubscribeInterceptor chatSubscribeInterceptor) {
+		this.jwtHandshakeInterceptor = jwtHandshakeInterceptor;
+		this.chatSubscribeInterceptor = chatSubscribeInterceptor;
+	}
     /**
      * 메시지 브로커 설정
      */
@@ -28,8 +37,18 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws-challenge-chat")
-                .setAllowedOriginPatterns("http://localhost:5500", "http://localhost:8080")
-                .withSockJS(); // ⭐⭐⭐ 이 줄이 핵심
+                .setAllowedOriginPatterns(
+                		"http://localhost:5500",
+                		"http://localhost:8080"
+                		)
+                .addInterceptors(jwtHandshakeInterceptor)
+                .withSockJS(); // 핵심
     }
+    
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        registration.interceptors(chatSubscribeInterceptor);
+    }
+
 
 }

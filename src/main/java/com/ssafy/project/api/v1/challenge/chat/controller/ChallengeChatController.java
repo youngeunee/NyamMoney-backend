@@ -1,23 +1,25 @@
 package com.ssafy.project.api.v1.challenge.chat.controller;
 
-import com.ssafy.project.api.v1.challenge.chat.dto.ChallengeChatMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
+import com.ssafy.project.api.v1.challenge.chat.dto.ChallengeChatMessage;
+import com.ssafy.project.api.v1.challenge.chat.service.ChallengeChatService;
+import com.ssafy.project.security.auth.UserPrincipal;
+
+import lombok.extern.slf4j.Slf4j;
+
 @Controller
+@Slf4j
 public class ChallengeChatController {
-
-    private static final Logger log =
-            LoggerFactory.getLogger(ChallengeChatController.class);
-
     private final SimpMessagingTemplate messagingTemplate;
-
-    public ChallengeChatController(SimpMessagingTemplate messagingTemplate) {
+    private final ChallengeChatService challengeChatService;
+    public ChallengeChatController(SimpMessagingTemplate messagingTemplate, ChallengeChatService challengeChatService) {
         this.messagingTemplate = messagingTemplate;
-        log.info("ChallengeChatController loaded");
+        this.challengeChatService = challengeChatService;
     }
 
     /**
@@ -27,20 +29,30 @@ public class ChallengeChatController {
      * SUBSCRIBE /topic/challenges/{challengeId}
      */
     @MessageMapping("/challenges/chat")
-    public void receiveAndBroadcast(ChallengeChatMessage message) {
+    public void receiveAndBroadcast(
+            ChallengeChatMessage message,
+            SimpMessageHeaderAccessor accessor
+    ) {
+        UserPrincipal principal =
+            (UserPrincipal) accessor
+                .getSessionAttributes()
+                .get("principal");
 
-        log.info("===== 챌린지 채팅 메시지 수신 =====");
-        log.info("challengeId = {}", message.getChallengeId());
-        log.info("senderId    = {}", message.getSenderId());
-        log.info("content     = {}", message.getContent());
+        if (principal == null) {
+            throw new RuntimeException("인증되지 않은 사용자");
+        }
 
-        // (아직 DB 저장, 권한 검증 안 함)
+        Long userId = principal.getUserId();
 
-        String topic = "/topic/challenges/" + message.getChallengeId();
+        challengeChatService.validateParticipant(
+            message.getChallengeId(),
+            userId
+        );
 
-        // 같은 챌린지 채팅방 구독자에게 메시지 전송
-        messagingTemplate.convertAndSend(topic, message);
-
-        log.info("메시지 브로드캐스트 완료 -> {}", topic);
+        messagingTemplate.convertAndSend(
+            "/topic/challenges/" + message.getChallengeId(),
+            message
+        );
     }
+
 }

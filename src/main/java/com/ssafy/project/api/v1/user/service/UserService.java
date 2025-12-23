@@ -30,4 +30,6 @@ public interface UserService {
 	boolean checkLoginId(String loginId);
 
 	CursorPage<UserPostItem> getUserPosts(Long userId, UserPostCursorRequest request);
+
+	boolean checkEmail(String email);
 }

@@ -319,6 +319,11 @@ public class UserServiceImpl implements UserService {
 	}
 	
 	@Override
+	public boolean checkEmail(String email) {
+		return uMapper.countEmail(email) > 0;
+	}
+	
+	@Override
 	public CursorPage<UserPostItem> getUserPosts(Long userId, UserPostCursorRequest req) {
 
 	        // 1) size 결정 (안 들어오면 기본값)

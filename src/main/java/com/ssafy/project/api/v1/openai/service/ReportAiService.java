@@ -185,6 +185,123 @@ public class ReportAiService {
 	    return extractPersona(resp);
 	}
 
+	public String summarizeDailyRhythm(
+	        long totalCount,
+	        String peakSlot,
+	        double peakRatio
+	) {
+
+	    OpenAiResponsesRequest req = OpenAiResponsesRequest.builder()
+	        .model("gpt-5-nano")
+	        .input(List.of(
+
+	            new InputMessageDto(
+	                "developer",
+	                "당신은 하루 소비 흐름을 해석하는 분석 AI입니다. "
+	              + "이미 계산된 수치를 바탕으로 소비 리듬을 설명하세요."
+	            ),
+
+	            new InputMessageDto(
+	                "developer",
+	                "출력 규칙: JSON 객체 하나만 출력하며 "
+	              + "key는 spendingRhythm 하나만 사용합니다."
+	            ),
+
+	            new InputMessageDto(
+	                "user",
+	                """
+	                [소비 리듬 데이터]
+	                - 하루 총 소비 건수: %d건
+	                - 가장 소비가 몰린 시간대: %s
+	                - 해당 시간대 소비 비중: %.1f%%
+	                """.formatted(totalCount, peakSlot, peakRatio)
+	            )
+	        ))
+	        .build();
+
+	    OpenAiResponsesResponse resp = openAiResponsesCaller.call(req);
+
+	    return extractOutputText(resp, "spendingRhythm");
+	}
+
+	public String summarizeDailyDensity(
+	        long totalSpend,
+	        int count,
+	        long maxAmount,
+	        String densityType
+	) {
+
+	    OpenAiResponsesRequest req = OpenAiResponsesRequest.builder()
+	        .model("gpt-5-nano")
+	        .input(List.of(
+
+	            new InputMessageDto(
+	                "developer",
+	                "당신은 하루 소비의 구조적 밀도를 해석하는 분석 AI입니다. "
+	              + "소액 반복인지, 특정 지출 집중인지 설명하세요."
+	            ),
+
+	            new InputMessageDto(
+	                "developer",
+	                "출력 규칙: JSON 객체 하나만 출력하며 "
+	              + "key는 spendingDensity 하나만 사용합니다."
+	            ),
+
+	            new InputMessageDto(
+	                "user",
+	                """
+	                [소비 밀도 데이터]
+	                - 하루 총 소비 금액: %d원
+	                - 소비 건수: %d건
+	                - 최대 단일 지출: %d원
+	                - 소비 밀도 유형: %s
+	                """.formatted(totalSpend, count, maxAmount, densityType)
+	            )
+	        ))
+	        .build();
+
+	    OpenAiResponsesResponse resp = openAiResponsesCaller.call(req);
+
+	    return extractOutputText(resp, "spendingDensity");
+	}
+
+	public String summarizeDailyComment(
+	        long totalSpend,
+	        double impulseRatio
+	) {
+
+	    OpenAiResponsesRequest req = OpenAiResponsesRequest.builder()
+	        .model("gpt-5-nano")
+	        .input(List.of(
+
+	            new InputMessageDto(
+	                "developer",
+	                "당신은 하루 소비를 정리해주는 마무리 AI입니다. "
+	              + "평가나 훈계 없이 부드러운 문장으로 마무리하세요."
+	            ),
+
+	            new InputMessageDto(
+	                "developer",
+	                "출력 규칙: JSON 객체 하나만 출력하며 "
+	              + "key는 dailyComment 하나만 사용합니다."
+	            ),
+
+	            new InputMessageDto(
+	                "user",
+	                """
+	                [하루 소비 요약]
+	                - 총 소비 금액: %d원
+	                - 감정 소비 비율: %.1f%%
+	                """.formatted(totalSpend, impulseRatio)
+	            )
+	        ))
+	        .build();
+
+	    OpenAiResponsesResponse resp = openAiResponsesCaller.call(req);
+
+	    return extractOutputText(resp, "dailyComment");
+	}
+
 
 	
 	// ================= 내부 메서드 =================

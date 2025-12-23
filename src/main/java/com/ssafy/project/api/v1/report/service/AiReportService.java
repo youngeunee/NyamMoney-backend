@@ -9,6 +9,6 @@ public interface AiReportService {
 
 	MonthlyReportResponse getMonthlyAnalysis(Long userId, Integer year, Integer month);
 
-	DailyReportResponse getDailyAnalysis(LocalDate date);
+	DailyReportResponse getDailyAnalysis(Long userId, LocalDate date);
 
 }

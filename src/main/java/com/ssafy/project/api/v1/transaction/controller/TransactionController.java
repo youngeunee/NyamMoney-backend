@@ -25,6 +25,8 @@ import com.ssafy.project.api.v1.integration.nhcard.service.NhCardService;
 import com.ssafy.project.api.v1.brand.service.BrandService;
 import com.ssafy.project.api.v1.category.service.CategoryService;
 import com.ssafy.project.api.v1.openai.service.MerchantCategoryAiService;
+import com.ssafy.project.api.v1.follow.dto.FollowStatusResponse;
+import com.ssafy.project.api.v1.follow.service.FollowService;
 import com.ssafy.project.api.v1.transaction.dto.TransactionCreateRequest;
 import com.ssafy.project.api.v1.transaction.dto.TransactionCreateResponse;
 import com.ssafy.project.api.v1.transaction.dto.TransactionCursorRequest;
@@ -34,12 +36,18 @@ import com.ssafy.project.api.v1.transaction.dto.TransactionItem;
 import com.ssafy.project.api.v1.transaction.dto.TransactionSummaryResponse;
 import com.ssafy.project.api.v1.transaction.dto.TransactionUpdateRequest;
 import com.ssafy.project.api.v1.transaction.service.TransactionService;
+import com.ssafy.project.api.v1.user.dto.UserDetailResponse;
+import com.ssafy.project.api.v1.user.service.UserService;
 import com.ssafy.project.common.dto.CursorPage;
+import com.ssafy.project.domain.user.model.ProfileVisibility;
 import com.ssafy.project.security.auth.UserPrincipal;
+
+import lombok.extern.slf4j.Slf4j;
 
 
 @RestController
 @RequestMapping("/api/v1/transactions")
+@Slf4j
 public class TransactionController {
 	
 	private final TransactionService transactionService;
@@ -47,19 +55,25 @@ public class TransactionController {
     private final BrandService brandService;
     private final CategoryService categoryService;
     private final MerchantCategoryAiService merchantCategoryAiService;
+    private final UserService userService;
+    private final FollowService followService;
     
 	public TransactionController(
 	        TransactionService transactionService,
 	        NhCardService nhCardService,
 	        BrandService brandService,
 	        CategoryService categoryService,
-	        MerchantCategoryAiService merchantCategoryAiService
+	        MerchantCategoryAiService merchantCategoryAiService,
+            UserService userService,
+            FollowService followService
     ) {
 		this.transactionService = transactionService;
 		this.nhCardService = nhCardService;
 		this.brandService = brandService;
 		this.categoryService = categoryService;
 		this.merchantCategoryAiService = merchantCategoryAiService;
+        this.userService = userService;
+        this.followService = followService;
 	}
 	
 	@PostMapping
@@ -125,6 +139,55 @@ public class TransactionController {
         }
 
         TransactionSummaryResponse res = transactionService.getSummary(userId, start, end);
+        return ResponseEntity.ok(res);
+    }
+
+    @GetMapping("/users/{targetUserId}/summary")
+    public ResponseEntity<TransactionSummaryResponse> getUserSummary(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable Long targetUserId,
+            @RequestParam(required = false) LocalDateTime from,
+            @RequestParam(required = false) LocalDateTime to
+    ) {
+        Long userId = principal.getUserId();
+
+        // 기본값: to=now, from=해당 월 1일 00:00:00
+        LocalDateTime end = (to != null) ? to : LocalDateTime.now();
+        LocalDateTime start = (from != null)
+                ? from
+                : end.toLocalDate().withDayOfMonth(1).atStartOfDay();
+
+        if (start.isAfter(end)) {
+            throw new IllegalArgumentException("from은 to보다 이후일 수 없습니다.");
+        }
+
+        // 자기 자신은 항상 허용
+        if (!userId.equals(targetUserId)) {
+            UserDetailResponse target = userService.getUserDetail(targetUserId);
+            if (target == null) {
+                return ResponseEntity.notFound().build();
+            }
+            ProfileVisibility visibility = target.getProfileVisibility();
+            boolean isPublic = visibility == ProfileVisibility.PUBLIC;
+            boolean isProtected = visibility == ProfileVisibility.PROTECTED;
+
+            boolean allowed = isPublic;
+
+            if (isProtected) {
+            	log.debug("나 프라이빗 계정이야!");
+            	FollowStatusResponse status = followService.getFollowStatus(userId, targetUserId);
+                String follow = status != null ? status.getStatus() : null;
+                allowed = "ACCEPTED".equalsIgnoreCase(follow);
+            }
+
+            if (!allowed) {
+            	log.debug("너 못 봐 ");
+            	return ResponseEntity.status(403).build();
+            }
+        }
+
+        TransactionSummaryResponse res = transactionService.getSummary(targetUserId, start, end);
+        log.debug("호출 호출: ", res.toString());
         return ResponseEntity.ok(res);
     }
 	

@@ -19,5 +19,6 @@ public class MonthlyReportResponse {
     private List<CategoryStats> categoryStats;
 
     private String aiSummary;
+    private String emotionSummary;
 
 }

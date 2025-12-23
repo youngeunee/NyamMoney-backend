@@ -63,14 +63,16 @@ public class AiReportServiceImpl implements AiReportService {
 
         // AI 요약
         String aiSummary;
+        String emotionSummary;
         try {
             aiSummary = reportAiService.summarizeMonthly(y, m, totalSpend, impulseSpend, impulseRatio, topCategory);
-            
+            emotionSummary = reportAiService.summarizeEmotionConsumption(totalSpend, impulseSpend, impulseRatio, topCategory);
             
             
             
         } catch (Exception e) {
             aiSummary = "이번 달 소비 내역을 분석했어요. 주요 지출 흐름을 확인해보세요.";
+            emotionSummary = "";
         }
 
         
@@ -82,7 +84,7 @@ public class AiReportServiceImpl implements AiReportService {
                 impulseRatio,
                 topCategory,
                 stats,
-                aiSummary
+                aiSummary, emotionSummary
         );
 	}
 	

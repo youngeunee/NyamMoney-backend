@@ -25,10 +25,18 @@ public class ReportAiTestRunner implements CommandLineRunner {
             11,
             500000,
             250000,
-            20.7,
+            20.0,
             "카페/디저트"
         );
-
+        
+        String emotion = reportAiService.summarizeEmotionConsumption(
+        	    500000,
+        	    250000,
+        	    20.3,
+        	    "카페/디저트"
+        	);
+        
         System.out.println("AI SUMMARY = " + result);
+        System.out.println("EMOTION SUMMARY = " + emotion);
     }
 }

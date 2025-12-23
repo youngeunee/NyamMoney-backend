@@ -38,15 +38,17 @@ public class AiReportController {
 	
 	@GetMapping("/daily")
 	public ResponseEntity<DailyReportResponse> getDailyReport(
+			@AuthenticationPrincipal UserPrincipal principal,
             @RequestParam(required = false) String date
     ) {
+		Long userId = principal.getUserId();
         // 기준 날짜 확정
         LocalDate targetDate = (date == null)
                 ? LocalDate.now()
                 : LocalDate.parse(date, DateTimeFormatter.ISO_DATE);
 
         // Service 호출
-        DailyReportResponse response = aiService.getDailyAnalysis(targetDate);
+        DailyReportResponse response = aiService.getDailyAnalysis(userId, targetDate);
 
         // 응답
         return ResponseEntity.ok(response);

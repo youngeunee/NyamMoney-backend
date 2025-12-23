@@ -3,6 +3,8 @@ package com.ssafy.project.api.v1.report.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -12,6 +14,7 @@ import com.ssafy.project.api.v1.openai.dto.OpenAiResponsesResponse;
 import com.ssafy.project.api.v1.openai.service.ReportAiService;
 import com.ssafy.project.api.v1.report.dto.CategoryStats;
 import com.ssafy.project.api.v1.report.dto.DailyReportResponse;
+import com.ssafy.project.api.v1.report.dto.DailyTxStat;
 import com.ssafy.project.api.v1.report.dto.MonthlyReportResponse;
 import com.ssafy.project.api.v1.report.dto.PersonaResult;
 import com.ssafy.project.api.v1.report.mapper.AiReportMapper;
@@ -36,7 +39,6 @@ public class AiReportServiceImpl implements AiReportService {
 
 	
 	public MonthlyReportResponse getMonthlyAnalysis(Long userId, Integer year, Integer month) {
-		
 		 // 기준 연/월 확정
         LocalDate now = LocalDate.now();
         int y = (year != null) ? year : now.getYear();
@@ -91,9 +93,7 @@ public class AiReportServiceImpl implements AiReportService {
             	    "균형형 소비자",
             	    "소비가 한쪽으로 크게 치우치지 않고 비교적 고르게 나타났어요."
             	);
-        }
-
-        
+        }        
         // Response
         return new MonthlyReportResponse(
                 y, m,
@@ -107,13 +107,105 @@ public class AiReportServiceImpl implements AiReportService {
 	}
 
 
-	public DailyReportResponse getDailyAnalysis(LocalDate date) {
-		LocalDateTime start = date.atStartOfDay();
-		LocalDateTime end = start.plusDays(1);
+	public DailyReportResponse getDailyAnalysis(Long userId, LocalDate date) {
+		// 조회 기간 계산
+		LocalDateTime startAt = date.atStartOfDay();
+		LocalDateTime endAt = startAt.plusDays(1);
+
+	    // Mapper 호출
+		List<CategoryStats> stats =
+		        aiReportMapper.selectDailyCategoryStats(userId, startAt, endAt);
+		List<DailyTxStat> txList =
+		        aiReportMapper.selectDailyTxStats(userId, startAt, endAt);
+
+	    // Service 계산 로직 (리듬 / 밀도 / 비율)
+		// 총액/감정 소비
+		long totalSpend = txList.stream()
+		        .mapToLong(DailyTxStat::getAmount)
+		        .sum();
+		long impulseSpend = txList.stream()
+		        .filter(DailyTxStat::isImpulse)
+		        .mapToLong(DailyTxStat::getAmount)
+		        .sum();
+		double impulseRatio = totalSpend == 0
+		        ? 0.0
+		        : Math.round((impulseSpend * 1000.0 / totalSpend)) / 10.0;
 		
-		// ---
-		return null;
+		// 소비 리듬
+		Map<String, Long> slotCount = txList.stream()
+			    .collect(Collectors.groupingBy(
+			        tx -> toTimeSlot(tx.getHour()),
+			        Collectors.counting()
+			    ));
+
+			long totalCount = txList.size();
+
+			Map.Entry<String, Long> peak =
+			    slotCount.entrySet().stream()
+			        .max(Map.Entry.comparingByValue())
+			        .orElse(null);
+
+			String peakSlot = peak != null ? peak.getKey() : null;
+			double peakRatio = peak == null
+			        ? 0.0
+			        : Math.round((peak.getValue() * 1000.0 / totalCount)) / 10.0;
+			
+			// 소비 밀도
+			int count = txList.size();
+
+			long maxAmount = txList.stream()
+			        .mapToLong(DailyTxStat::getAmount)
+			        .max()
+			        .orElse(0);
+
+			long avgAmount = count == 0 ? 0 : totalSpend / count;
+
+			String densityType;
+			if (maxAmount > totalSpend * 0.5) {
+			    densityType = "집중형";
+			} else if (count >= 5 && avgAmount < 10000) {
+			    densityType = "소액 반복형";
+			} else {
+			    densityType = "혼합형";
+			}
+
+	    // AI 호출
+			String spendingRhythm;
+			String spendingDensity;
+			String dailyComment;
+
+			try {
+			    spendingRhythm = reportAiService.summarizeDailyRhythm(
+			            totalCount, peakSlot, peakRatio);
+			    spendingDensity = reportAiService.summarizeDailyDensity(
+			            totalSpend, count, maxAmount, densityType);
+			    dailyComment = reportAiService.summarizeDailyComment(
+			            totalSpend, impulseRatio);
+			} catch (Exception e) {
+			    spendingRhythm = "오늘의 소비는 특정 시간대에 크게 치우치지 않은 흐름이었어요.";
+			    spendingDensity = "소비가 한 가지 형태로 뚜렷하게 나타나지는 않았어요.";
+			    dailyComment = "오늘의 소비를 기록하고 돌아본 것만으로도 충분한 하루예요.";
+			}
+
+	    // Response 생성
+			return new DailyReportResponse(
+			        date.toString(),
+			        totalSpend,
+			        impulseSpend,
+			        impulseRatio,
+			        stats,
+			        spendingRhythm,
+			        spendingDensity,
+			        dailyComment
+			);
 	}
 	
+	private String toTimeSlot(int hour) {
+	    if (hour < 6) return "새벽";
+	    if (hour < 12) return "아침";
+	    if (hour < 18) return "오후";
+	    return "저녁";
+	}
+
 	
 }

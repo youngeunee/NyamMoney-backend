@@ -3,6 +3,7 @@ package com.ssafy.project.security.jwt;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.crypto.SecretKey;
 
@@ -48,7 +49,8 @@ public class JWTUtil {
     public String createRefreshToken(UserDto user) {
         Map<String, Object> claims = Map.of(
                 "userId", user.getUserId(),
-                "loginId", user.getLoginId());
+                "loginId", user.getLoginId(),
+                "jti", UUID.randomUUID().toString());
         return create("refreshToken", refreshExpMin, claims);
     }
 

@@ -28,5 +28,8 @@ public class TransactionSummaryResponse {
 
     
     private List<CategorySummaryItem> categorySummaries;
+    
+    private List<CategorySummaryItem> categoryImpulseSummaries;
+
 
 }

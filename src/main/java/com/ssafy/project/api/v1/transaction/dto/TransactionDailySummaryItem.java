@@ -20,4 +20,6 @@ public class TransactionDailySummaryItem {
     private Long totalImpulseExpense;
     private Long totalIncome;
     private List<CategorySummaryItem> categorySummaries;
+    private List<CategorySummaryItem> categoryImpulseSummaries;
+
 }

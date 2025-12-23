@@ -23,6 +23,10 @@ public class TransactionSummaryResponse {
     // 기간 전체 시발비용 합 (tx_type = EXPENSE AND impulse_flag = 1)
     private Long totalImpulseExpense;
     
+    // 기간 전체 수입 합
+    private Long totalIncome;
+
+    
     private List<CategorySummaryItem> categorySummaries;
 
 }

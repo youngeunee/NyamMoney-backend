@@ -79,12 +79,13 @@
 
 	
 	
-	<resultMap id="TransactionSummaryResponseMap"
+  <resultMap id="TransactionSummaryResponseMap"
 	           type="com.ssafy.project.api.v1.transaction.dto.TransactionSummaryResponse">
 	  <id property="from" column="from_at"/>
 	  <result property="to" column="to_at"/>
 	  <result property="totalExpense" column="total_expense"/>
 	  <result property="totalImpulseExpense" column="total_impulse_expense"/>
+	  <result property="totalIncome" column="total_income"/>
 	  <collection property="categorySummaries"
               ofType="com.ssafy.project.api.v1.transaction.dto.CategorySummaryItem"
               resultMap="CategorySummaryItemMap"/>
@@ -96,6 +97,7 @@
 	  <result property="date" column="date"/>
 	  <result property="totalExpense" column="total_expense"/>
 	  <result property="totalImpulseExpense" column="total_impulse_expense"/>
+	  <result property="totalIncome" column="total_income"/>
 	  <collection property="categorySummaries"
               ofType="com.ssafy.project.api.v1.transaction.dto.CategorySummaryItem"
               resultMap="CategorySummaryItemMap"/>
@@ -232,6 +234,7 @@
 
     s.total_expense,
     s.total_impulse_expense,
+    s.total_income,
 
     c.category_id,
     c.category_name,
@@ -258,7 +261,17 @@
           THEN amount
           ELSE 0
         END
-      ), 0) AS total_impulse_expense
+      ), 0) AS total_impulse_expense,
+
+      COALESCE(SUM(
+        CASE
+          WHEN tx_type = 'INCOME'
+               AND is_refund = 0
+               AND canceled_at IS NULL
+          THEN amount
+          ELSE 0
+        END
+      ), 0) AS total_income
     FROM transactions
     WHERE user_id = #{userId}
       AND occurred_at <![CDATA[>=]]> #{from}
@@ -332,6 +345,7 @@
     d.date,
     d.total_expense,
     d.total_impulse_expense,
+    d.total_income,
 
     c.category_id,
     c.category_name,
@@ -360,7 +374,17 @@
           THEN t.amount
           ELSE 0
         END
-      ), 0) AS total_impulse_expense
+      ), 0) AS total_impulse_expense,
+
+      COALESCE(SUM(
+        CASE
+          WHEN t.tx_type = 'INCOME'
+               AND t.is_refund = 0
+               AND t.canceled_at IS NULL
+          THEN t.amount
+          ELSE 0
+        END
+      ), 0) AS total_income
 
     FROM transactions t
     WHERE t.user_id = #{userId}

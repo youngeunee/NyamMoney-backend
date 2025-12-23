@@ -4,14 +4,22 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.ssafy.project.api.v1.brand.mapper.BrandMapper">
-	<select id="findBrand" parameterType="String" resultType="String">
-		SELECT brand_name
-	    FROM brand_dictionary
-	    WHERE brand_name LIKE CONCAT('%', #{merchantName}, '%')
-	    UNION
-	    SELECT brand_name
-	    FROM brand_alias ba
-	    JOIN brand_dictionary bd ON ba.brand_id = bd.brand_id
-	    WHERE ba.alias LIKE CONCAT('%', #{merchantName}, '%')
-	</select>
+    <select id="findBrand" parameterType="String" resultType="long">
+      SELECT t.category_id
+      FROM (
+        SELECT bd.category_id AS category_id, bd.brand_name AS brand_name
+        FROM brand_dictionary bd
+        WHERE #{merchantName} LIKE CONCAT('%', bd.brand_name, '%')
+
+        UNION ALL
+
+        SELECT bd.category_id AS category_id, bd.brand_name AS brand_name
+        FROM brand_alias ba
+        JOIN brand_dictionary bd ON ba.brand_id = bd.brand_id
+        WHERE #{merchantName} LIKE CONCAT('%', ba.alias, '%')
+      ) t
+      ORDER BY CHAR_LENGTH(t.brand_name) DESC
+      LIMIT 1
+    </select>
+
 </mapper>

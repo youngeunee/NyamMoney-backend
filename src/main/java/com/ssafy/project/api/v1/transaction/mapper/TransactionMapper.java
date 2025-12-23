@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import com.ssafy.project.api.v1.integration.nhcard.dto.TransactionUpsertParam;
 import com.ssafy.project.api.v1.transaction.dto.TransactionCreateParam;
 import com.ssafy.project.api.v1.transaction.dto.TransactionCreateResponse;
 import com.ssafy.project.api.v1.transaction.dto.TransactionDailySummaryItem;
@@ -49,4 +50,15 @@ public interface TransactionMapper {
 		);
 
 		List<TransactionDailySummaryItem> selectDailySummary(TransactionSummaryQuery query);
+
+		int upsertNhCardTransaction(TransactionUpsertParam p);
+
+		List<String> findExistingNhAuthNos(
+			    @Param("userId") Long userId,
+			    @Param("source") String source,
+			    @Param("authNos") List<String> authNos
+			);
+
+			int insertNhCardTransaction(TransactionUpsertParam p);
+		
 }

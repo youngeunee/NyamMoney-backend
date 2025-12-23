@@ -67,6 +67,56 @@
    	FROM comments
    	WHERE post_id=#{postId} AND deleted_at IS NULL
    </select>
+
+   <!-- 내 댓글 목록 (cursor 기반, 최신순) -->
+   <resultMap id="UserCommentMap" type="com.ssafy.project.api.v1.comment.dto.CommentWithPostResponse">
+     <id property="commentId" column="comment_id"/>
+     <result property="postId" column="post_id"/>
+     <result property="boardId" column="board_id"/>
+     <result property="boardName" column="board_name"/>
+    <result property="postTitle" column="post_title"/>
+    <result property="content" column="content_md"/>
+    <result property="createdAt" column="created_at"/>
+    <result property="updatedAt" column="updated_at"/>
+    <result property="likeCount" column="likes_count"/>
+    <result property="commentCount" column="comment_count"/>
+    <result property="authorUserId" column="author_user_id"/>
+    <result property="authorNickname" column="author_nickname"/>
+  </resultMap>
+
+   <select id="selectUserComments" resultMap="UserCommentMap">
+   	SELECT
+   		c.comment_id,
+   		c.post_id,
+   		p.board_id,
+   		b.name            AS board_name,
+   		p.title           AS post_title,
+   		c.content_md,
+   		c.created_at,
+   		c.updated_at,
+   		p.likes_count     AS likes_count,
+   		(SELECT COUNT(*) FROM comments c2 WHERE c2.post_id = p.post_id AND c2.deleted_at IS NULL) AS comment_count,
+   		u.user_id         AS author_user_id,
+   		u.nickname        AS author_nickname
+   	FROM comments c
+   	JOIN posts p   ON c.post_id = p.post_id
+   	JOIN boards b  ON p.board_id = b.board_id
+   	JOIN users u   ON c.user_id = u.user_id
+   	WHERE c.user_id = #{userId}
+   	  AND c.deleted_at IS NULL
+   	<if test="cursor != null">
+   	  AND c.comment_id &lt; #{cursor}
+   	</if>
+   	ORDER BY c.comment_id DESC
+   	LIMIT #{sizePlusOne}
+   </select>
+
+   <select id="countUserComments" resultType="long">
+   	SELECT COUNT(*)
+   	FROM comments c
+   	WHERE c.user_id = #{userId}
+   	  AND c.deleted_at IS NULL
+   </select>
    
    <select id="getCommentList" resultMap="CommentDetailMap">
    	SELECT

@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafy.project.api.v1.api.dto.ApiResponse;
 import com.ssafy.project.api.v1.api.dto.MerchantItem;
-import com.ssafy.project.api.v1.category.Service.CategoryService;
+import com.ssafy.project.api.v1.category.service.CategoryService;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;

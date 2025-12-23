@@ -3,6 +3,7 @@ package com.ssafy.project.api.v1.comment.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -12,10 +13,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.ssafy.project.api.v1.comment.dto.CommentCreateRequest;
 import com.ssafy.project.api.v1.comment.dto.CommentCreateResponse;
 import com.ssafy.project.api.v1.comment.dto.CommentDetailResponse;
+import com.ssafy.project.api.v1.comment.dto.CommentCursorResponse;
 import com.ssafy.project.api.v1.comment.dto.CommentListResponse;
 import com.ssafy.project.api.v1.comment.dto.CommentUpdateRequest;
 import com.ssafy.project.api.v1.comment.service.CommentService;
@@ -92,4 +95,24 @@ public class CommentController {
 		return commentService.getCommentList(postId, page, size);
 	}
 
+}
+
+@RestController
+@RequestMapping("/api/v1/users/{userId}/comments")
+class UserCommentController {
+	private final CommentService commentService;
+	public UserCommentController(CommentService commentService) {
+		this.commentService = commentService;
+	}
+
+	@GetMapping
+	public CommentCursorResponse getMyComments(@PathVariable Long userId,
+			@RequestParam(required = false) Long cursor,
+			@RequestParam(defaultValue = "10") int size,
+			@AuthenticationPrincipal(expression = "userId") Long principalId) {
+		if (principalId == null || !principalId.equals(userId)) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인 댓글만 조회할 수 있습니다.");
+		}
+		return commentService.getUserComments(userId, cursor, size);
+	}
 }

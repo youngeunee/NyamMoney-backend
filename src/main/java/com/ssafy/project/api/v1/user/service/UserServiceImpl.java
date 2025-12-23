@@ -1,16 +1,25 @@
 package com.ssafy.project.api.v1.user.service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
+
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.Collections;
+
+
+import org.springframework.data.redis.core.SessionCallback;
+import org.springframework.data.redis.core.RedisOperations;
 
 import org.springframework.dao.DuplicateKeyException;
+
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.ssafy.project.api.v1.auth.refreshToken.dto.RefreshTokenDto;
-import com.ssafy.project.api.v1.auth.refreshToken.mapper.RefreshTokenMapper;
 import com.ssafy.project.api.v1.user.dto.UserDetailResponse;
 import com.ssafy.project.api.v1.user.dto.UserDto;
 import com.ssafy.project.api.v1.user.dto.UserLoginRequest;
@@ -25,23 +34,30 @@ import com.ssafy.project.api.v1.user.mapper.UserMapper;
 import com.ssafy.project.common.dto.CursorPage;
 import com.ssafy.project.common.util.CursorUtil;
 import com.ssafy.project.common.util.PostExcerptUtil;
+import com.ssafy.project.domain.user.model.Role;
+import com.ssafy.project.redis.repository.RefreshTokenRepository;
 import com.ssafy.project.security.jwt.JWTUtil;
+
+import io.jsonwebtoken.Claims;
 
 @Service
 public class UserServiceImpl implements UserService {
 	private final UserMapper uMapper;
 	private final PasswordEncoder passwordEncoder;
 	private final JWTUtil jwtUtil;
-	private final RefreshTokenMapper rMapper;
+//	private final RefreshTokenMapper rMapper;
+	private final RefreshTokenRepository rMapper;
+	private final StringRedisTemplate redisTemplate;
 	
 	private static final int DEFAULT_SIZE = 10;
     private static final int MAX_SIZE = 50;
 	
-	public UserServiceImpl(UserMapper uMapper, PasswordEncoder passwordEncoder, JWTUtil jwtUtil, RefreshTokenMapper rMapper) {
+	public UserServiceImpl(UserMapper uMapper, PasswordEncoder passwordEncoder, JWTUtil jwtUtil, RefreshTokenRepository rMapper, StringRedisTemplate redisTemplate) {
 		this.uMapper = uMapper;
 		this.passwordEncoder = passwordEncoder;
 		this.jwtUtil = jwtUtil;
 		this.rMapper = rMapper;
+		this.redisTemplate = redisTemplate;
 	}
 	
 	@Override
@@ -63,8 +79,9 @@ public class UserServiceImpl implements UserService {
 		        .shareLevel(req.getShareLevel())
 		        .name(req.getName())
 		        .phoneNumber(req.getPhoneNumber())
+		        .role(Role.USER)
+		        .createdAt(LocalDateTime.now())
 		        .build();
-		
 		try {
 	        uMapper.insertUser(user);
 	    } catch (DuplicateKeyException e) {
@@ -89,24 +106,84 @@ public class UserServiceImpl implements UserService {
 		if(!match) throw new IllegalArgumentException("아이디/비밀번호가 올바르지 않습니다.");
 		
 		// 토큰 생성 
+//        String accessToken = jwtUtil.createAccessToken(user);
+//        String refreshToken = jwtUtil.createRefreshToken(user);
+        
+//        // 토큰 만료 시간 추출 
+//        Date refreshExp = jwtUtil.getClaims(refreshToken).getExpiration();
+//        LocalDateTime expiresAt = refreshExp.toInstant()
+//                .atZone(ZoneId.systemDefault())
+//                .toLocalDateTime();
+//        
+//        // db에 refresh token 저장 
+//        RefreshTokenDto refreshTokenDto = RefreshTokenDto.builder()
+//                .userId(user.getUserId())
+//                .tokenHash(refreshToken)     // 일단 해싱 안하고 바로 저장  
+//                .expiresAt(expiresAt)
+//                .build();
+//
+//        rMapper.insertRefreshToken(refreshTokenDto);
+        
         String accessToken = jwtUtil.createAccessToken(user);
         String refreshToken = jwtUtil.createRefreshToken(user);
-        
-        // 토큰 만료 시간 추출 
-        Date refreshExp = jwtUtil.getClaims(refreshToken).getExpiration();
-        LocalDateTime expiresAt = refreshExp.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDateTime();
-        
-        // db에 refresh token 저장 
-        RefreshTokenDto refreshTokenDto = RefreshTokenDto.builder()
-                .userId(user.getUserId())
-                .tokenHash(refreshToken)     // 일단 해싱 안하고 바로 저장  
-                .expiresAt(expiresAt)
-                .build();
 
-        rMapper.insertRefreshToken(refreshTokenDto);
-        
+        Claims claims = jwtUtil.getClaims(refreshToken);
+        String jti = claims.get("jti", String.class);
+
+        String hashKey = "refresh:jti:" + jti;
+        String idxKey  = "refresh:user:" + user.getUserId();
+
+        // 해시 저장 값(모두 String)
+        Map<String, String> hash = Map.of(
+                "userId", String.valueOf(user.getUserId()),
+                "loginId", user.getLoginId(),
+                "issuedAt", String.valueOf(claims.getIssuedAt().getTime()),
+                "expiresAt", String.valueOf(claims.getExpiration().getTime())
+        );
+
+        // TTL 계산 (0/음수 방지)
+        long ttlMillis = claims.getExpiration().getTime() - System.currentTimeMillis();
+        if (ttlMillis <= 0) {
+            throw new IllegalArgumentException("refresh token 이 만료되었습니다. 다시 로그인 해주세요.");
+        }
+        Duration ttl = Duration.ofMillis(ttlMillis);
+
+        // 원자 처리: 기존 전부 삭제 → 새로 1개 등록
+        redisTemplate.execute(new SessionCallback<Object>() {
+            @Override
+            @SuppressWarnings({ "unchecked", "rawtypes" })
+            public Object execute(RedisOperations operations) {
+
+                // (트랜잭션 전에) 기존 jti 목록을 읽어둠
+                Set<String> existing = (Set<String>) operations.opsForSet().members(idxKey);
+                if (existing == null) existing = Collections.emptySet();
+
+                operations.multi();
+
+                // 1) 기존 메인키들 삭제
+                if (!existing.isEmpty()) {
+                    Set<String> oldKeys = existing.stream()
+                            .map(oldJti -> "refresh:jti:" + oldJti)
+                            .collect(Collectors.toCollection(HashSet::new));
+                    operations.delete(oldKeys);
+                }
+
+                // 2) 인덱스 Set 교체(단일 정책)
+                operations.delete(idxKey);
+
+                // 3) 새 hash 저장 + TTL
+                operations.opsForHash().putAll(hashKey, hash);
+                operations.expire(hashKey, ttl);
+
+                // 4) 새 jti만 Set에 추가 (+ 선택: idxKey TTL)
+                operations.opsForSet().add(idxKey, jti);
+                operations.expire(idxKey, ttl);
+
+                return operations.exec();
+            }
+        });
+
+
 		return new UserLoginResponse(user.getUserId(), user.getLoginId(), user.getNickname(), accessToken, refreshToken, user.getRole(), user.getName());
 	}
 

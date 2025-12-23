@@ -95,7 +95,7 @@ public class PostServiceImpl implements PostService {
         if ("comments".equalsIgnoreCase(sort)) {
         	sortQuery = "comment_count DESC, p.created_at DESC";
         } else if ("likes".equalsIgnoreCase(sort)) {
-        	sortQuery = "likes_computed DESC, p.created_at DESC";
+        	sortQuery = "p.likes_count DESC, p.created_at DESC";
         } else {
         	sortQuery = "p.created_at DESC";
         }

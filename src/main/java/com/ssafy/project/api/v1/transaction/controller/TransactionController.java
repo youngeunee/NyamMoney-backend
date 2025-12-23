@@ -1,7 +1,11 @@
 package com.ssafy.project.api.v1.transaction.controller;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,6 +20,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ssafy.project.api.v1.integration.nhcard.dto.TransactionUpsertParam;
+import com.ssafy.project.api.v1.integration.nhcard.service.NhCardService;
+import com.ssafy.project.api.v1.brand.service.BrandService;
+import com.ssafy.project.api.v1.category.service.CategoryService;
+import com.ssafy.project.api.v1.openai.service.MerchantCategoryAiService;
 import com.ssafy.project.api.v1.transaction.dto.TransactionCreateRequest;
 import com.ssafy.project.api.v1.transaction.dto.TransactionCreateResponse;
 import com.ssafy.project.api.v1.transaction.dto.TransactionCursorRequest;
@@ -34,9 +43,23 @@ import com.ssafy.project.security.auth.UserPrincipal;
 public class TransactionController {
 	
 	private final TransactionService transactionService;
-	
-	public TransactionController(TransactionService transactionService) {
+    private final NhCardService nhCardService;
+    private final BrandService brandService;
+    private final CategoryService categoryService;
+    private final MerchantCategoryAiService merchantCategoryAiService;
+    
+	public TransactionController(
+	        TransactionService transactionService,
+	        NhCardService nhCardService,
+	        BrandService brandService,
+	        CategoryService categoryService,
+	        MerchantCategoryAiService merchantCategoryAiService
+    ) {
 		this.transactionService = transactionService;
+		this.nhCardService = nhCardService;
+		this.brandService = brandService;
+		this.categoryService = categoryService;
+		this.merchantCategoryAiService = merchantCategoryAiService;
 	}
 	
 	@PostMapping
@@ -140,4 +163,83 @@ public class TransactionController {
 
         return ResponseEntity.ok(res);
     }
+    
+    
+    @PostMapping("/nh/sync")
+    public ResponseEntity<Map<String, Object>> syncNhTransactions(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam String from,
+            @RequestParam String to
+    ) {
+        Long userId = principal.getUserId();
+
+        // 1) yyyyMMdd 파싱
+        LocalDate fromDate = LocalDate.parse(from, DateTimeFormatter.BASIC_ISO_DATE);
+        LocalDate toDate = LocalDate.parse(to, DateTimeFormatter.BASIC_ISO_DATE);
+
+        // 2) 기간 검증 (최대 3개월)
+        if (fromDate.isAfter(toDate)) {
+            throw new IllegalArgumentException("from은 to 이후일 수 없습니다.");
+        }
+        if (ChronoUnit.DAYS.between(fromDate, toDate) > 92) {
+            throw new IllegalArgumentException("조회 기간은 최대 3개월입니다.");
+        }
+
+        // 3) 서비스 호출 (NH 호출 + 분류 + upsert 저장)
+        int syncedCount = transactionService.syncNhTransactions(userId, fromDate, toDate);
+
+        // 4) 결과만 반환
+        Map<String, Object> body = Map.of(
+                "success", true,
+                "from", from,
+                "to", to,
+                "syncedCount", syncedCount
+        );
+
+        return ResponseEntity.ok(body);
+    }
+
+    @GetMapping("/classify")
+    public ResponseEntity<Map<String, Object>> classifyCategory(
+            @RequestParam String merchantName,
+            @RequestParam(defaultValue = "true") boolean allowAi
+    ) {
+        if (merchantName == null || merchantName.isBlank()) {
+            throw new IllegalArgumentException("merchantName은 필수입니다.");
+        }
+
+        String cleaned = merchantName.trim();
+        Long categoryId = 10L; // default 기타
+        String method = "NONE";
+
+        Long byRule = brandService.findBrand(cleaned);
+        if (byRule != null) {
+            categoryId = byRule;
+            method = "RULE";
+        } else {
+            Long byVector = categoryService.findVector(cleaned);
+            if (byVector != null) {
+                categoryId = byVector;
+                method = "VECTOR";
+            } else if (allowAi) {
+                try {
+                    String code = merchantCategoryAiService.classifySingleDigitCode(cleaned); // "0"~"9"
+                    categoryId = transactionService.mapCodeToCategoryId(code); // 1~10
+                    method = "OPENAI";
+                } catch (Exception e) {
+                    categoryId = 10L;
+                    method = "NONE";
+                }
+            }
+        }
+
+        Map<String, Object> body = Map.of(
+                "merchantName", cleaned,
+                "categoryId", categoryId,
+                "method", method
+        );
+
+        return ResponseEntity.ok(body);
+    }
+
 }

@@ -70,19 +70,35 @@
 	  <result property="isRefund"        column="is_refund"/>
 	</resultMap>	
 	
+	<resultMap id="CategorySummaryItemMap"
+	           type="com.ssafy.project.api.v1.transaction.dto.CategorySummaryItem">
+	  <id     property="categoryId"   column="category_id"/>
+	  <result property="categoryName" column="category_name"/>
+	  <result property="amount"       column="category_amount"/>
+	</resultMap>
+
+	
+	
 	<resultMap id="TransactionSummaryResponseMap"
 	           type="com.ssafy.project.api.v1.transaction.dto.TransactionSummaryResponse">
-	  <result property="from" column="from_at"/>
+	  <id property="from" column="from_at"/>
 	  <result property="to" column="to_at"/>
 	  <result property="totalExpense" column="total_expense"/>
 	  <result property="totalImpulseExpense" column="total_impulse_expense"/>
+	  <collection property="categorySummaries"
+              ofType="com.ssafy.project.api.v1.transaction.dto.CategorySummaryItem"
+              resultMap="CategorySummaryItemMap"/>
 	</resultMap>
 	
 	<resultMap id="TransactionDailySummaryItemMap"
 	           type="com.ssafy.project.api.v1.transaction.dto.TransactionDailySummaryItem">
+	  <id property="date" column="date"/>
 	  <result property="date" column="date"/>
 	  <result property="totalExpense" column="total_expense"/>
 	  <result property="totalImpulseExpense" column="total_impulse_expense"/>
+	  <collection property="categorySummaries"
+              ofType="com.ssafy.project.api.v1.transaction.dto.CategorySummaryItem"
+              resultMap="CategorySummaryItemMap"/>
 	</resultMap>
 
 
@@ -206,41 +222,68 @@
 	    AND deleted_at IS NULL
 	</update>
 	
-	<select id="selectSummary"
-	        parameterType="com.ssafy.project.api.v1.transaction.dto.TransactionSummaryQuery"
-	        resultMap="TransactionSummaryResponseMap">
-	
-	  SELECT
-	    #{from} AS from_at,
-	    #{to}   AS to_at,
-	
-	    COALESCE(SUM(
-	      CASE
-	        WHEN tx_type = 'EXPENSE'
-	             AND is_refund = 0
-	             AND canceled_at IS NULL
-	        THEN amount
-	        ELSE 0
-	      END
-	    ), 0) AS total_expense,
-	
-	    COALESCE(SUM(
-	      CASE
-	        WHEN tx_type = 'EXPENSE'
-	             AND impulse_flag = 1
-	             AND is_refund = 0
-	             AND canceled_at IS NULL
-	        THEN amount
-	        ELSE 0
-	      END
-	    ), 0) AS total_impulse_expense
-	
-	  FROM transactions
-	  WHERE user_id = #{userId}
-	    AND occurred_at <![CDATA[>=]]> #{from}
-	    AND occurred_at <![CDATA[<=]]> #{to}
-	    AND deleted_at IS NULL
-	</select>
+<select id="selectSummary"
+        parameterType="com.ssafy.project.api.v1.transaction.dto.TransactionSummaryQuery"
+        resultMap="TransactionSummaryResponseMap">
+
+  SELECT
+    #{from} AS from_at,
+    #{to}   AS to_at,
+
+    s.total_expense,
+    s.total_impulse_expense,
+
+    c.category_id,
+    c.category_name,
+    c.category_amount
+
+  FROM (
+    SELECT
+      COALESCE(SUM(
+        CASE
+          WHEN tx_type = 'EXPENSE'
+               AND is_refund = 0
+               AND canceled_at IS NULL
+          THEN amount
+          ELSE 0
+        END
+      ), 0) AS total_expense,
+
+      COALESCE(SUM(
+        CASE
+          WHEN tx_type = 'EXPENSE'
+               AND impulse_flag = 1
+               AND is_refund = 0
+               AND canceled_at IS NULL
+          THEN amount
+          ELSE 0
+        END
+      ), 0) AS total_impulse_expense
+    FROM transactions
+    WHERE user_id = #{userId}
+      AND occurred_at <![CDATA[>=]]> #{from}
+      AND occurred_at <![CDATA[<=]]> #{to}
+      AND deleted_at IS NULL
+  ) s
+  LEFT JOIN (
+    SELECT
+      t.category_id           AS category_id,
+      COALESCE(cat.name, '미분류') AS category_name,
+      COALESCE(SUM(t.amount), 0)  AS category_amount
+    FROM transactions t
+    LEFT JOIN categories cat ON cat.category_id = t.category_id
+    WHERE t.user_id = #{userId}
+      AND t.occurred_at <![CDATA[>=]]> #{from}
+      AND t.occurred_at <![CDATA[<=]]> #{to}
+      AND t.deleted_at IS NULL
+      AND t.tx_type = 'EXPENSE'
+      AND t.is_refund = 0
+      AND t.canceled_at IS NULL
+    GROUP BY t.category_id, cat.name
+  ) c ON 1=1
+
+</select>
+
 	
 	
 	
@@ -280,42 +323,159 @@
 	    AND t.occurred_at &lt;= #{to}
 	</select>
 	
-	<select id="selectDailySummary"
-	        parameterType="com.ssafy.project.api.v1.transaction.dto.TransactionSummaryQuery"
-	        resultMap="TransactionDailySummaryItemMap">
+
+<select id="selectDailySummary"
+        parameterType="com.ssafy.project.api.v1.transaction.dto.TransactionSummaryQuery"
+        resultMap="TransactionDailySummaryItemMap">
+
+  SELECT
+    d.date,
+    d.total_expense,
+    d.total_impulse_expense,
+
+    c.category_id,
+    c.category_name,
+    c.category_amount
+
+  FROM (
+    SELECT
+      DATE(t.occurred_at) AS date,
+
+      COALESCE(SUM(
+        CASE
+          WHEN t.tx_type = 'EXPENSE'
+               AND t.is_refund = 0
+               AND t.canceled_at IS NULL
+          THEN t.amount
+          ELSE 0
+        END
+      ), 0) AS total_expense,
+
+      COALESCE(SUM(
+        CASE
+          WHEN t.tx_type = 'EXPENSE'
+               AND t.impulse_flag = 1
+               AND t.is_refund = 0
+               AND t.canceled_at IS NULL
+          THEN t.amount
+          ELSE 0
+        END
+      ), 0) AS total_impulse_expense
+
+    FROM transactions t
+    WHERE t.user_id = #{userId}
+      AND t.occurred_at <![CDATA[>=]]> #{from}
+      AND t.occurred_at <![CDATA[<=]]> #{to}
+      AND t.deleted_at IS NULL
+    GROUP BY DATE(t.occurred_at)
+  ) d
+  LEFT JOIN (
+    SELECT
+      DATE(t.occurred_at) AS date,
+      t.category_id       AS category_id,
+      COALESCE(cat.name, '미분류') AS category_name,
+      COALESCE(SUM(t.amount), 0)  AS category_amount
+    FROM transactions t
+    LEFT JOIN categories cat ON cat.category_id = t.category_id
+    WHERE t.user_id = #{userId}
+      AND t.occurred_at <![CDATA[>=]]> #{from}
+      AND t.occurred_at <![CDATA[<=]]> #{to}
+      AND t.deleted_at IS NULL
+      AND t.tx_type = 'EXPENSE'
+      AND t.is_refund = 0
+      AND t.canceled_at IS NULL
+    GROUP BY DATE(t.occurred_at), t.category_id, cat.name
+  ) c
+    ON c.date = d.date
+
+  ORDER BY d.date ASC, c.category_amount DESC
+</select>
+
 	
-	  SELECT
-	    DATE(t.occurred_at) AS date,
-	
-	    COALESCE(SUM(
-	      CASE
-	        WHEN t.tx_type = 'EXPENSE'
-	             AND t.is_refund = 0
-	             AND t.canceled_at IS NULL
-	        THEN t.amount
-	        ELSE 0
-	      END
-	    ), 0) AS total_expense,
-	
-	    COALESCE(SUM(
-	      CASE
-	        WHEN t.tx_type = 'EXPENSE'
-	             AND t.impulse_flag = 1
-	             AND t.is_refund = 0
-	             AND t.canceled_at IS NULL
-	        THEN t.amount
-	        ELSE 0
-	      END
-	    ), 0) AS total_impulse_expense
-	
-	  FROM transactions t
-	  WHERE t.user_id = #{userId}
-	    AND t.occurred_at <![CDATA[>=]]> #{from}
-	    AND t.occurred_at <![CDATA[<=]]> #{to}
-	    AND t.deleted_at IS NULL
-	
-	  GROUP BY DATE(t.occurred_at)
-	  ORDER BY DATE(t.occurred_at) ASC
-	</select>	
-	
+	<insert id="upsertNhCardTransaction"
+            parameterType="com.ssafy.project.api.v1.integration.nhcard.dto.TransactionUpsertParam">
+
+        INSERT INTO transactions (
+            user_id,
+            occurred_at,
+            amount,
+            tx_type,
+
+            category_id,
+            merchant_name_raw,
+            payment_method,
+            memo,
+            tags,
+
+            source,
+            card_auth_no,
+            sales_type,
+            installment_months,
+            currency_code,
+
+            impulse_flag,
+            is_refund,
+            canceled_at
+        )
+        VALUES (
+            #{userId},
+            #{occurredAt},
+            #{amount},
+            #{txType},
+
+            #{categoryId},
+            #{merchantNameRaw},
+            #{paymentMethod},
+            #{memo},
+            #{tags},
+
+            #{source},
+            #{cardAuthNo},
+            #{salesType},
+            #{installmentMonths},
+            #{currencyCode},
+
+            #{impulseFlag},
+            #{isRefund},
+            #{canceledAt}
+        )
+        ON DUPLICATE KEY UPDATE
+            amount              = VALUES(amount),
+            category_id         = VALUES(category_id),
+            payment_method      = VALUES(payment_method),
+            sales_type          = VALUES(sales_type),
+            installment_months  = VALUES(installment_months),
+            currency_code       = VALUES(currency_code),
+            is_refund           = VALUES(is_refund),
+            canceled_at         = VALUES(canceled_at),
+            updated_at          = CURRENT_TIMESTAMP
+    </insert>
+<select id="findExistingNhAuthNos" resultType="string">
+  SELECT card_auth_no
+  FROM transactions
+  WHERE user_id = #{userId}
+    AND source = #{source}
+    AND card_auth_no IN
+    <foreach collection="authNos" item="no" open="(" separator="," close=")">
+      #{no}
+    </foreach>
+</select>
+
+<insert id="insertNhCardTransaction" parameterType="com.ssafy.project.api.v1.integration.nhcard.dto.TransactionUpsertParam">
+	  INSERT INTO transactions (
+	    user_id, occurred_at, amount, tx_type,
+	    category_id, category_method,
+	    merchant_name_raw, payment_method, memo, tags,
+	    source, card_auth_no, sales_type, installment_months, currency_code,
+	    impulse_flag, is_refund, canceled_at
+	  ) VALUES (
+	    #{userId}, #{occurredAt}, #{amount}, #{txType},
+	    #{categoryId}, #{categoryMethod},
+	    #{merchantNameRaw}, #{paymentMethod}, #{memo}, #{tags},
+	    #{source}, #{cardAuthNo}, #{salesType}, #{installmentMonths}, #{currencyCode},
+	    #{impulseFlag}, #{isRefund}, #{canceledAt}
+	  )
+	</insert>
+
+
 </mapper>

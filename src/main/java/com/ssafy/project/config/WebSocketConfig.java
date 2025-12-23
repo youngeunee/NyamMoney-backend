@@ -41,8 +41,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 		"http://localhost:5500",
                 		"http://localhost:8080"
                 		)
-                .addInterceptors(jwtHandshakeInterceptor)
-                .withSockJS(); // 핵심
+                .addInterceptors(jwtHandshakeInterceptor);
+                //.withSockJS(); // 핵심
     }
     
     @Override

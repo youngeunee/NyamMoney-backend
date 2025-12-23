@@ -29,14 +29,16 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
             WebSocketHandler wsHandler,
             Map<String, Object> attributes
     ) {
-        // Authorization: Bearer xxx
-        String authHeader = request.getHeaders().getFirst("Authorization");
+        // 1️⃣ 쿼리 파라미터에서 token 꺼내기
+        String query = request.getURI().getQuery(); // token=xxx
+        String token = null;
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
+        if (query != null && query.startsWith("token=")) {
+            token = query.substring(6);
+        }
 
+        if (token != null) {
             try {
-                // 🔥 REST와 동일한 로직
                 Claims claims = jwtUtil.getClaims(token);
 
                 Long userId = claims.get("userId", Long.class);
@@ -45,18 +47,15 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 
                 UserPrincipal principal =
                         new UserPrincipal(userId, loginId, nickname);
-                log.info("[WS] principal 저장: {}", principal);
 
-                // WebSocket 세션에 저장
+                log.info("[WS] principal 저장 성공: {}", principal);
                 attributes.put("principal", principal);
 
             } catch (Exception e) {
-                // 토큰 문제 있으면 principal 저장 안 함
-                // (연결은 허용, SEND/SUBSCRIBE에서 차단)
+                log.warn("[WS] 토큰 검증 실패");
             }
         }
 
-        // 토큰 없거나 잘못되면 연결은 허용(읽기 전용)
         return true;
     }
 

@@ -21,11 +21,15 @@ public class AuthServiceImpl implements AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserMapper uMapper;
     private final JWTUtil jwtUtil;
-
-	public AuthServiceImpl(RefreshTokenRepository refreshTokenRepository,UserMapper uMapper, JWTUtil jwtUtil) {
+    private final SignupEmailVerificationService signupEmailVerificationService;
+    
+	public AuthServiceImpl(RefreshTokenRepository refreshTokenRepository,
+			UserMapper uMapper, JWTUtil jwtUtil,
+			SignupEmailVerificationService signupEmailVerificationService) {
 		this.refreshTokenRepository = refreshTokenRepository;
 		this.uMapper = uMapper;
 		this.jwtUtil = jwtUtil;
+		this.signupEmailVerificationService = signupEmailVerificationService;
 	}
 	
 	@Override
@@ -119,6 +123,11 @@ public class AuthServiceImpl implements AuthService {
 //        String newAccessToken = jwtUtil.createAccessToken(user);
         
 //        return new TokenRefreshResponse(newAccessToken, refreshToken);
+	}
+
+	@Override
+	public boolean isVerified(String email) {
+		return signupEmailVerificationService.isVerified(email);
 	}
 	
 }

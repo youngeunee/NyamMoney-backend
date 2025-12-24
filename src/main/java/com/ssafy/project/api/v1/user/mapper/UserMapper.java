@@ -32,4 +32,6 @@ public interface UserMapper {
 	
 ;
 	long countUserPosts(@Param("userId") Long userId);
-	int countEmail(@Param("email") String email);}
+	int countEmail(@Param("email") String email);
+	
+}

@@ -1,7 +1,6 @@
 package com.ssafy.project.api.v1.auth.dto;
 
-import com.google.auto.value.AutoValue.Builder;
-
+import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,5 +11,6 @@ import lombok.Setter;
 @Setter
 public class PasswordResetSendCodeRequest {
 	Long userId;
+	String loginId;
 	String email;
 }

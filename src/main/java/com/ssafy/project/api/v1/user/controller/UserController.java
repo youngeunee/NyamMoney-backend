@@ -18,8 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ssafy.project.api.v1.user.dto.DuplicateCheckResponse;
 import com.ssafy.project.api.v1.user.dto.UserDetailResponse;
 import com.ssafy.project.api.v1.user.dto.UserDto;
-import com.ssafy.project.api.v1.user.dto.UserLoginRequest;
-import com.ssafy.project.api.v1.user.dto.UserLoginResponse;
 import com.ssafy.project.api.v1.user.dto.UserPasswordUpdateRequest;
 import com.ssafy.project.api.v1.user.dto.UserPostCursorRequest;
 import com.ssafy.project.api.v1.user.dto.UserPostItem;
@@ -31,7 +29,6 @@ import com.ssafy.project.api.v1.user.service.UserService;
 import com.ssafy.project.common.dto.CursorPage;
 import com.ssafy.project.security.auth.UserPrincipal;
 
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 
 @RestController

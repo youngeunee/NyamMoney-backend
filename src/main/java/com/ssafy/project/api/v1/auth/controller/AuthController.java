@@ -89,11 +89,6 @@ public class AuthController {
         return builder.body(res);
     }
 	
-	@Operation(
-		    summary = "搿滉犯?勳泝",
-		    description = "?勳灛 搿滉犯?疙暅 ?毄?愳潣 refresh token????牅?╇媹??",
-		    security = { @SecurityRequirement(name = "bearerAuth") }
-		)
 	@PostMapping("/logout")
 	public ResponseEntity<Map<String, String>> logout(HttpServletRequest req ){
 		String accessToken = extractAccessToken(req);

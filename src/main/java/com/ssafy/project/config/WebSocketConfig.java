@@ -9,16 +9,16 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 
 import com.ssafy.project.api.v1.challenge.chat.interceptor.ChatConnectInterceptor;
 import com.ssafy.project.api.v1.challenge.chat.interceptor.ChatSubscribeInterceptor;
-import com.ssafy.project.api.v1.challenge.chat.interceptor.JwtHandshakeInterceptor;
+import com.ssafy.project.api.v1.challenge.chat.interceptor.UserHandshakeInterceptor;
 
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
-	private final JwtHandshakeInterceptor jwtHandshakeInterceptor;
+	private final UserHandshakeInterceptor userHandshakeInterceptor;
 	private final ChatSubscribeInterceptor chatSubscribeInterceptor;
 	private final ChatConnectInterceptor chatConnectInterceptor;
-	public WebSocketConfig(JwtHandshakeInterceptor jwtHandshakeInterceptor, ChatSubscribeInterceptor chatSubscribeInterceptor, ChatConnectInterceptor chatConnectInterceptor) {
-		this.jwtHandshakeInterceptor = jwtHandshakeInterceptor;
+	public WebSocketConfig(UserHandshakeInterceptor userHandshakeInterceptor, ChatSubscribeInterceptor chatSubscribeInterceptor, ChatConnectInterceptor chatConnectInterceptor) {
+		this.userHandshakeInterceptor = userHandshakeInterceptor;
 		this.chatSubscribeInterceptor = chatSubscribeInterceptor;
 		this.chatConnectInterceptor = chatConnectInterceptor;
 	}
@@ -40,7 +40,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws-challenge-chat")
-                .setAllowedOriginPatterns("*");
+                .setAllowedOriginPatterns("*")
+                .addInterceptors(userHandshakeInterceptor);
     }
     
     @Override

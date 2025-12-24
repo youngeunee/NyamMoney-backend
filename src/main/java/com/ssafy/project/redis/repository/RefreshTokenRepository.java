@@ -13,4 +13,6 @@ public interface RefreshTokenRepository {
     void deleteByJti(Long userId, String jti);
 
     void deleteAllByUserId(Long userId);
+
+	boolean existsByUserId(Long userId);
 }

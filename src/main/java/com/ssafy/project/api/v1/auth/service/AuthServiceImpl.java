@@ -1,14 +1,11 @@
 package com.ssafy.project.api.v1.auth.service;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ssafy.project.api.v1.auth.dto.TokenRefreshResponse;
-import com.ssafy.project.api.v1.auth.refreshToken.dto.RefreshTokenDto;
-import com.ssafy.project.api.v1.auth.refreshToken.mapper.RefreshTokenMapper;
 import com.ssafy.project.api.v1.user.dto.UserDto;
 import com.ssafy.project.api.v1.user.mapper.UserMapper;
 import com.ssafy.project.redis.repository.RefreshTokenRepository;
@@ -42,6 +39,10 @@ public class AuthServiceImpl implements AuthService {
 	@Override
 	@Transactional
 	public TokenRefreshResponse refresh(String refreshToken) {
+
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new IllegalArgumentException("?„ì§ ?§„ refresh token ?„ì—ë§??¬ìš©??ê¸°ëŠ¥?˜ì§„í–‰ ??ë‹ˆ??");
+        }
 
 		Claims claims  = jwtUtil.getClaims(refreshToken);
 		
@@ -82,7 +83,14 @@ public class AuthServiceImpl implements AuthService {
         }
 
         String newAccessToken = jwtUtil.createAccessToken(user);
-        return new TokenRefreshResponse(newAccessToken, refreshToken);
+        return new TokenRefreshResponse(
+                user.getUserId(),
+                user.getLoginId(),
+                user.getNickname(),
+                user.getRole(),
+                user.getName(),
+                newAccessToken,
+                refreshToken);
         
 //		log.debug("[AUTH] token userId = {}", userId);
 //		log.debug("[AUTH] DB   userId = {}", rToken != null ? rToken.getUserId() : null);

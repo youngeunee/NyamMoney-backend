@@ -15,6 +15,7 @@ import com.ssafy.project.security.jwt.JWTUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -34,13 +35,10 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         log.debug("JwtVerificationFilter.doFilterInternal() called: {}", request.getRequestURI());
-        
-        String header = request.getHeader("Authorization");
-        log.debug("[JWT] Authorization header = {}", header);
-        
+
         String token = extractToken(request);
 
-        // 토큰이 없으면 그냥 다음 필터로 넘김 (비로그인 요청)
+        // 토큰이 없으면 그냥 다음 필터로 진행 (비로그인 요청)
         if (token == null) {
             log.debug("[JWT] 토큰 없음, 다음 필터로 진행");
             filterChain.doFilter(request, response);
@@ -50,7 +48,7 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
         try {
             // 1. 토큰 검증 + 클레임 추출
             Claims claims = jwtUtil.getClaims(token);
-            log.info("[JWT] 토큰 검증 성공, claims = {}", claims);
+            log.info("[JWT] 토큰 검증성공, claims = {}", claims);
             
             Long userId = claims.get("userId", Long.class);
             String loginId = claims.get("loginId", String.class);
@@ -67,12 +65,12 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
                             Collections.emptyList()
                     );
 
-            // 4. SecurityContext 에 저장
+            // 4. SecurityContext 세팅
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
         } catch (Exception e) {
-            log.warn("JWT 검증 실패: {}", e.getMessage());
-            // 실패 시 그냥 인증 없이 진행 (혹은 response.sendError(401) 로 바로 끊을 수도 있음)
+            log.warn("JWT 검증실패: {}", e.getMessage());
+            // 실패해도 인증 없이 다음 필터 진행
         }
 
         filterChain.doFilter(request, response);
@@ -82,6 +80,14 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
         String header = request.getHeader("Authorization");
         if (header != null && header.startsWith("Bearer ")) {
             return header.substring(7);
+        }
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie c : cookies) {
+                if ("accessToken".equals(c.getName())) {
+                    return c.getValue();
+                }
+            }
         }
         return null;
     }

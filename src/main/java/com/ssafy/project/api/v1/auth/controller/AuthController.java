@@ -47,12 +47,14 @@ public class AuthController {
         ResponseCookie accessCookie = buildCookie(
                 "accessToken",
                 res.getAccessToken(),
-                jwtUtil.getClaims(res.getAccessToken()).getExpiration().getTime());
+                jwtUtil.getClaims(res.getAccessToken()).getExpiration().getTime(),
+                false);
 
         ResponseCookie refreshCookie = buildCookie(
                 "refreshToken",
                 res.getRefreshToken(),
-                jwtUtil.getClaims(res.getRefreshToken()).getExpiration().getTime());
+                jwtUtil.getClaims(res.getRefreshToken()).getExpiration().getTime(),
+                true);
 		
 		return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, accessCookie.toString(), refreshCookie.toString())
@@ -68,11 +70,13 @@ public class AuthController {
         ResponseCookie accessCookie = buildCookie(
                 "accessToken",
                 res.getAccessToken(),
-                jwtUtil.getClaims(res.getAccessToken()).getExpiration().getTime());
+                jwtUtil.getClaims(res.getAccessToken()).getExpiration().getTime(),
+                false);
 
         ResponseCookie refreshCookie = res.getRefreshToken() != null
                 ? buildCookie("refreshToken", res.getRefreshToken(),
-                              jwtUtil.getClaims(res.getRefreshToken()).getExpiration().getTime())
+                              jwtUtil.getClaims(res.getRefreshToken()).getExpiration().getTime(),
+                              true)
                 : null;
 
         ResponseEntity.BodyBuilder builder = ResponseEntity.ok()
@@ -125,10 +129,10 @@ public class AuthController {
         return null;
     }
 
-    private ResponseCookie buildCookie(String name, String value, long expiresAtMillis) {
+    private ResponseCookie buildCookie(String name, String value, long expiresAtMillis, boolean httpOnly) {
         long maxAgeSeconds = Math.max(1, (expiresAtMillis - System.currentTimeMillis()) / 1000);
         return ResponseCookie.from(name, value)
-                .httpOnly(true)
+                .httpOnly(httpOnly)
                 .secure(false) // TODO: 배포 환경에서는 true 로 전환
                 .sameSite("Lax")
                 .path("/")

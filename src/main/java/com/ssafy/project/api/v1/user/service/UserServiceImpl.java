@@ -184,7 +184,14 @@ public class UserServiceImpl implements UserService {
         });
 
 
-		return new UserLoginResponse(user.getUserId(), user.getLoginId(), user.getNickname(), accessToken, refreshToken, user.getRole(), user.getName());
+		return new UserLoginResponse(
+                user.getUserId(),
+                user.getLoginId(),
+                user.getNickname(),
+                accessToken,
+                user.getRole(),
+                user.getName(),
+                refreshToken);
 	}
 
 	@Override

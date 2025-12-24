@@ -1,5 +1,7 @@
 package com.ssafy.project.api.v1.challenge.chat.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.ssafy.project.api.v1.challenge.chat.dto.ChallengeChatMessage;
@@ -26,5 +28,11 @@ public class ChallengeChatService {
     public void saveMessage(ChallengeChatMessage message) {
     	challengeChatMapper.insertMessage(message);
     }
+
+	public List<ChallengeChatMessage> getChatHistory(Long challengeId, Long userId) {
+	    validateParticipant(challengeId, userId);
+
+	    return challengeChatMapper.findByChallengeId(challengeId);
+	}
 
 }

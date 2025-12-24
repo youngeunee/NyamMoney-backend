@@ -19,5 +19,22 @@
       #{sentAt}
     )
   </insert>
+  
+  <select id="findByChallengeId"
+        parameterType="long"
+        resultType="com.ssafy.project.api.v1.challenge.chat.dto.ChallengeChatMessage">
+
+	    SELECT
+	        challenge_id     AS challengeId,
+	        sender_id        AS senderId,
+	        sender_nickname  AS senderNickname,
+	        content,
+	        sent_at          AS sentAt
+	    FROM challenge_chat_messages
+	    WHERE challenge_id = #{challengeId}
+	    ORDER BY sent_at ASC
+	
+	</select>
+  
 
 </mapper>

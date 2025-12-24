@@ -30,7 +30,9 @@ public class ChatSubscribeInterceptor implements ChannelInterceptor {
             Object principalObj = accessor.getSessionAttributes().get("principal");
             if (!(principalObj instanceof UserPrincipal)) {
                 // 인증 안 된 사용자
-                throw new RuntimeException("인증되지 않은 사용자입니다.");
+                //throw new RuntimeException("인증되지 않은 사용자입니다.");
+            	// 인증 안 된 경우 구독 차단
+            	return null;
             }
 
             UserPrincipal principal = (UserPrincipal) principalObj;
@@ -41,7 +43,11 @@ public class ChatSubscribeInterceptor implements ChannelInterceptor {
             Long challengeId = extractChallengeId(destination);
 
             // 3) 참여자 검증 (JOINED)
-            challengeChatService.validateParticipant(challengeId, userId);
+            try {
+                challengeChatService.validateParticipant(challengeId, userId);
+            } catch (Exception e) {
+                return null; // SEND도 조용히 차단
+            }
         }
 
         return message;
@@ -53,7 +59,8 @@ public class ChatSubscribeInterceptor implements ChannelInterceptor {
      */
     private Long extractChallengeId(String destination) {
         if (destination == null) {
-            throw new RuntimeException("destination이 없습니다.");
+            //throw new RuntimeException("destination이 없습니다.");
+        	return null;
         }
 
         // 안전하게 분해
@@ -61,13 +68,15 @@ public class ChatSubscribeInterceptor implements ChannelInterceptor {
         // ["", "topic", "challenges", "{id}"]
 
         if (parts.length < 4) {
-            throw new RuntimeException("잘못된 구독 경로입니다.");
+            //throw new RuntimeException("잘못된 구독 경로입니다.");
+        	return null;
         }
 
         try {
             return Long.parseLong(parts[3]);
         } catch (NumberFormatException e) {
-            throw new RuntimeException("challengeId 파싱 실패");
+            //throw new RuntimeException("challengeId 파싱 실패");
+        	return null;
         }
     }
 }

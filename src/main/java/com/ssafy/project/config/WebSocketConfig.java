@@ -7,6 +7,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
+import com.ssafy.project.api.v1.challenge.chat.interceptor.ChatConnectInterceptor;
 import com.ssafy.project.api.v1.challenge.chat.interceptor.ChatSubscribeInterceptor;
 import com.ssafy.project.api.v1.challenge.chat.interceptor.JwtHandshakeInterceptor;
 
@@ -15,9 +16,11 @@ import com.ssafy.project.api.v1.challenge.chat.interceptor.JwtHandshakeIntercept
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 	private final JwtHandshakeInterceptor jwtHandshakeInterceptor;
 	private final ChatSubscribeInterceptor chatSubscribeInterceptor;
-	public WebSocketConfig(JwtHandshakeInterceptor jwtHandshakeInterceptor, ChatSubscribeInterceptor chatSubscribeInterceptor) {
+	private final ChatConnectInterceptor chatConnectInterceptor;
+	public WebSocketConfig(JwtHandshakeInterceptor jwtHandshakeInterceptor, ChatSubscribeInterceptor chatSubscribeInterceptor, ChatConnectInterceptor chatConnectInterceptor) {
 		this.jwtHandshakeInterceptor = jwtHandshakeInterceptor;
 		this.chatSubscribeInterceptor = chatSubscribeInterceptor;
+		this.chatConnectInterceptor = chatConnectInterceptor;
 	}
     /**
      * 메시지 브로커 설정
@@ -37,17 +40,15 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws-challenge-chat")
-                .setAllowedOriginPatterns(
-                		"http://localhost:5500",
-                		"http://localhost:8080"
-                		)
-                .addInterceptors(jwtHandshakeInterceptor)
-                .withSockJS(); // 핵심
+                .setAllowedOriginPatterns("*");
     }
     
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(chatSubscribeInterceptor);
+        registration.interceptors(
+        		chatConnectInterceptor,
+        		chatSubscribeInterceptor
+        		);
     }
 
 

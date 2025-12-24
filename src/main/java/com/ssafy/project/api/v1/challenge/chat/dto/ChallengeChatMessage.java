@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class ChallengeChatMessage {
 	private Long challengeId;
     private Long senderId;
+    private String senderNickname;
     private String content;
     private LocalDateTime sentAt;
 

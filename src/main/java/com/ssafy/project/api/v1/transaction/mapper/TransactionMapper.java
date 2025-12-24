@@ -38,6 +38,7 @@ public interface TransactionMapper {
 		    @Param("userId") Long userId,
 		    @Param("from") LocalDateTime from,
 		    @Param("to") LocalDateTime to,
+		    @Param("q") String q,   
 		    @Param("cursorOccurredAt") LocalDateTime cursorOccurredAt,
 		    @Param("cursorTransactionId") Long cursorTransactionId,
 		    @Param("limit") int limit
@@ -46,7 +47,8 @@ public interface TransactionMapper {
 		long countTransactionsByPeriod(
 		    @Param("userId") Long userId,
 		    @Param("from") LocalDateTime from,
-		    @Param("to") LocalDateTime to
+		    @Param("to") LocalDateTime to,
+		    @Param("q") String q
 		);
 
 		List<TransactionDailySummaryItem> selectDailySummary(TransactionSummaryQuery query);

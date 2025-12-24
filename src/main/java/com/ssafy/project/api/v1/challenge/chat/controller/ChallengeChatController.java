@@ -6,6 +6,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 
@@ -35,18 +36,21 @@ public class ChallengeChatController {
             (UserPrincipal) accessor
                 .getSessionAttributes()
                 .get("principal");
+//        UserPrincipal user;
+//        Long userId = user.getUserId();
 
         if (principal == null) {
-            throw new RuntimeException("인증되지 않은 사용자");
+        	throw new RuntimeException("인증되지 않은 사용자");
         }
 
         Long userId = principal.getUserId();
         String nickname = principal.getNickname();
-
+        log.debug("유저아이디 =-======", userId);
         // 참여자 검증
         challengeChatService.validateParticipant(
             message.getChallengeId(),
             userId
+            
         );
 
         // 서버에서 sender 정보 세팅

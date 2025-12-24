@@ -28,6 +28,10 @@ public class ChatConnectInterceptor implements ChannelInterceptor {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+        	log.info("🔥🔥🔥 STOMP SEND 들어옴");
+            log.info("destination = {}", accessor.getDestination());
+            log.info("sessionAttributes = {}", accessor.getSessionAttributes());
+            log.info("headers = {}", accessor.toNativeHeaderMap());
 
             String authHeader = accessor.getFirstNativeHeader("Authorization");
             log.info("[WS-CONNECT] Authorization = {}", authHeader);
@@ -37,8 +41,11 @@ public class ChatConnectInterceptor implements ChannelInterceptor {
 
                 Claims claims = jwtUtil.getClaims(token);
 
+                // JWT numeric claims may deserialize as Integer/Long; use Number to avoid nulls.
+                Long userId = claims.get("userId", Number.class).longValue();
+
                 UserPrincipal principal = new UserPrincipal(
-                        claims.get("userId", Long.class),
+                        userId,
                         claims.get("loginId", String.class),
                         claims.get("nickname", String.class)
                 );

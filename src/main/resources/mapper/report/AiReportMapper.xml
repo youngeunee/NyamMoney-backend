@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.project.api.v1.report.mapper.AiReportMapper">
+
+	<select id="selectMonthlyCategoryStats"
+	        resultType="com.ssafy.project.api.v1.report.dto.CategoryStats">
+	  SELECT
+	      t.category_id AS categoryId,
+	      c.name        AS categoryName,
+	
+	      COALESCE(SUM(t.amount), 0) AS totalSpend,
+	
+	      COALESCE(
+	        SUM(CASE WHEN t.impulse_flag = 1 THEN t.amount ELSE 0 END),
+	        0
+	      ) AS impulseSpend
+	
+	  FROM transactions t
+	  LEFT JOIN categories c
+	    ON c.category_id = t.category_id
+	
+	  WHERE t.user_id = #{userId}
+	    AND t.tx_type = 'EXPENSE'
+	    AND t.occurred_at >= #{startAt}
+	    AND t.occurred_at &lt;  #{endAt}
+	
+	    AND t.is_refund = 0
+	    AND t.canceled_at IS NULL
+	    AND t.deleted_at IS NULL
+	
+	  GROUP BY t.category_id, c.name
+	  ORDER BY totalSpend DESC
+	</select>
+
+<select id="selectDailyCategoryStats"
+            resultType="com.ssafy.project.api.v1.report.dto.CategoryStats">
+
+        SELECT
+            c.category_id        AS categoryId,
+            c.name               AS categoryName,
+            SUM(t.amount)        AS totalSpend,
+            SUM(
+                CASE
+                    WHEN t.impulse_flag = 1 THEN t.amount
+                    ELSE 0
+                END
+            )                     AS impulseSpend
+        FROM transactions t
+        LEFT JOIN categories c
+               ON t.category_id = c.category_id
+        WHERE t.user_id = #{userId}
+          AND t.occurred_at >= #{startAt}
+          AND t.occurred_at &lt; #{endAt}
+          AND t.tx_type = 'EXPENSE'
+          AND t.deleted_at IS NULL
+        GROUP BY c.category_id, c.name
+        ORDER BY totalSpend DESC
+    </select>
+
+    <select id="selectDailyTxStats"
+            resultType="com.ssafy.project.api.v1.report.dto.DailyTxStat">
+
+        SELECT
+            HOUR(t.occurred_at)   AS hour,
+            t.amount              AS amount,
+            t.impulse_flag = 1    AS impulse
+        FROM transactions t
+        WHERE t.user_id = #{userId}
+          AND t.occurred_at >= #{startAt}
+          AND t.occurred_at &lt; #{endAt}
+          AND t.tx_type = 'EXPENSE'
+          AND t.deleted_at IS NULL
+    </select>
+
+
+
+</mapper>

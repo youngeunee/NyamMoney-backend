@@ -16,7 +16,9 @@ import lombok.Setter;
 public class TransactionCursorRequest {
     private LocalDateTime from;
     private LocalDateTime to;
-
+    
+    private String q; 
+    
     private String cursor;
     private Integer size;
 }

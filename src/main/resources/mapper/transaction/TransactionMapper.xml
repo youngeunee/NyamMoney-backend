@@ -77,17 +77,28 @@
 	  <result property="amount"       column="category_amount"/>
 	</resultMap>
 
+	<resultMap id="CategoryImpulseSummaryItemMap"
+	           type="com.ssafy.project.api.v1.transaction.dto.CategorySummaryItem">
+	  <id     property="categoryId"   column="imp_category_id"/>
+	  <result property="categoryName" column="imp_category_name"/>
+	  <result property="amount"       column="imp_category_amount"/>
+	</resultMap>
+
 	
 	
-	<resultMap id="TransactionSummaryResponseMap"
+  <resultMap id="TransactionSummaryResponseMap"
 	           type="com.ssafy.project.api.v1.transaction.dto.TransactionSummaryResponse">
 	  <id property="from" column="from_at"/>
 	  <result property="to" column="to_at"/>
 	  <result property="totalExpense" column="total_expense"/>
 	  <result property="totalImpulseExpense" column="total_impulse_expense"/>
+	  <result property="totalIncome" column="total_income"/>
 	  <collection property="categorySummaries"
               ofType="com.ssafy.project.api.v1.transaction.dto.CategorySummaryItem"
               resultMap="CategorySummaryItemMap"/>
+	  <collection property="categoryImpulseSummaries"
+              ofType="com.ssafy.project.api.v1.transaction.dto.CategorySummaryItem"
+              resultMap="CategoryImpulseSummaryItemMap"/>
 	</resultMap>
 	
 	<resultMap id="TransactionDailySummaryItemMap"
@@ -96,9 +107,13 @@
 	  <result property="date" column="date"/>
 	  <result property="totalExpense" column="total_expense"/>
 	  <result property="totalImpulseExpense" column="total_impulse_expense"/>
+	  <result property="totalIncome" column="total_income"/>
 	  <collection property="categorySummaries"
               ofType="com.ssafy.project.api.v1.transaction.dto.CategorySummaryItem"
               resultMap="CategorySummaryItemMap"/>
+	  <collection property="categoryImpulseSummaries"
+              ofType="com.ssafy.project.api.v1.transaction.dto.CategorySummaryItem"
+              resultMap="CategoryImpulseSummaryItemMap"/>
 	</resultMap>
 
 
@@ -232,10 +247,15 @@
 
     s.total_expense,
     s.total_impulse_expense,
+    s.total_income,
 
     c.category_id,
     c.category_name,
     c.category_amount
+,
+    ic.category_id AS imp_category_id,
+    ic.category_name AS imp_category_name,
+    ic.category_amount AS imp_category_amount
 
   FROM (
     SELECT
@@ -258,7 +278,17 @@
           THEN amount
           ELSE 0
         END
-      ), 0) AS total_impulse_expense
+      ), 0) AS total_impulse_expense,
+
+      COALESCE(SUM(
+        CASE
+          WHEN tx_type = 'INCOME'
+               AND is_refund = 0
+               AND canceled_at IS NULL
+          THEN amount
+          ELSE 0
+        END
+      ), 0) AS total_income
     FROM transactions
     WHERE user_id = #{userId}
       AND occurred_at <![CDATA[>=]]> #{from}
@@ -281,47 +311,73 @@
       AND t.canceled_at IS NULL
     GROUP BY t.category_id, cat.name
   ) c ON 1=1
+  LEFT JOIN (
+    SELECT
+      t.category_id           AS category_id,
+      COALESCE(cat.name, '미분류') AS category_name,
+      COALESCE(SUM(t.amount), 0)  AS category_amount
+    FROM transactions t
+    LEFT JOIN categories cat ON cat.category_id = t.category_id
+    WHERE t.user_id = #{userId}
+      AND t.occurred_at <![CDATA[>=]]> #{from}
+      AND t.occurred_at <![CDATA[<=]]> #{to}
+      AND t.deleted_at IS NULL
+      AND t.tx_type = 'EXPENSE'
+      AND t.impulse_flag = 1
+      AND t.is_refund = 0
+      AND t.canceled_at IS NULL
+    GROUP BY t.category_id, cat.name
+  ) ic ON 1=1
 
 </select>
 
 	
 	
 	
-	<select id="selectTransactionsCursor" resultMap="TransactionItemMap">
-	  SELECT
-	    t.transaction_id,
-	    t.occurred_at,
-	    t.amount,
-	    t.payment_method,
-	    t.merchant_name_raw,
-	    t.impulse_flag,
-	    t.is_refund
-	  FROM transactions t
-	  WHERE t.deleted_at IS NULL
-	    AND t.user_id = #{userId}
-	    AND t.occurred_at &gt;= #{from}
-	    AND t.occurred_at &lt;= #{to}
+<select id="selectTransactionsCursor" resultMap="TransactionItemMap">
+  SELECT
+    t.transaction_id,
+    t.occurred_at,
+    t.amount,
+    t.payment_method,
+    t.merchant_name_raw,
+    t.impulse_flag,
+    t.is_refund
+  FROM transactions t
+  WHERE t.deleted_at IS NULL
+    AND t.user_id = #{userId}
+    AND t.occurred_at &gt;= #{from}
+    AND t.occurred_at &lt;= #{to}
+
+    <!-- ✅ 거래처 검색어(q)가 있을 때만 적용 -->
+    <if test="q != null and q.trim() != ''">
+      AND t.merchant_name_raw LIKE CONCAT('%', #{q}, '%')
+    </if>
+
+    <!-- cursor가 있을 때만 적용 -->
+    <if test="cursorOccurredAt != null and cursorTransactionId != null">
+      AND (
+        t.occurred_at &lt; #{cursorOccurredAt}
+        OR (t.occurred_at = #{cursorOccurredAt} AND t.transaction_id &lt; #{cursorTransactionId})
+      )
+    </if>
+
+  ORDER BY t.occurred_at DESC, t.transaction_id DESC
+  LIMIT #{limit}
+</select>
 	
-	    <!-- cursor가 있을 때만 적용 -->
-	    <if test="cursorOccurredAt != null and cursorTransactionId != null">
-	      AND (
-	        t.occurred_at &lt; #{cursorOccurredAt}
-	        OR (t.occurred_at = #{cursorOccurredAt} AND t.transaction_id &lt; #{cursorTransactionId})
-	      )
-	    </if>
-	
-	  ORDER BY t.occurred_at DESC, t.transaction_id DESC
-	  LIMIT #{limit}
-	</select>
-	
-	<select id="countTransactionsByPeriod" resultType="long">
-	  SELECT COUNT(*)
-	  FROM transactions t
-	  WHERE t.deleted_at IS NULL
-	    AND t.user_id = #{userId}
-	    AND t.occurred_at &gt;= #{from}
-	    AND t.occurred_at &lt;= #{to}
-	</select>
+<select id="countTransactionsByPeriod" resultType="long">
+  SELECT COUNT(*)
+  FROM transactions t
+  WHERE t.deleted_at IS NULL
+    AND t.user_id = #{userId}
+    AND t.occurred_at &gt;= #{from}
+    AND t.occurred_at &lt;= #{to}
+
+  <if test="q != null and q.trim() != ''">
+    AND t.merchant_name_raw LIKE CONCAT('%', #{q}, '%')
+  </if>
+</select>
 	
 
 <select id="selectDailySummary"
@@ -332,10 +388,15 @@
     d.date,
     d.total_expense,
     d.total_impulse_expense,
+    d.total_income,
 
     c.category_id,
     c.category_name,
-    c.category_amount
+    c.category_amount,
+
+    ic.category_id AS imp_category_id,
+    ic.category_name AS imp_category_name,
+    ic.category_amount AS imp_category_amount
 
   FROM (
     SELECT
@@ -360,7 +421,17 @@
           THEN t.amount
           ELSE 0
         END
-      ), 0) AS total_impulse_expense
+      ), 0) AS total_impulse_expense,
+
+      COALESCE(SUM(
+        CASE
+          WHEN t.tx_type = 'INCOME'
+               AND t.is_refund = 0
+               AND t.canceled_at IS NULL
+          THEN t.amount
+          ELSE 0
+        END
+      ), 0) AS total_income
 
     FROM transactions t
     WHERE t.user_id = #{userId}
@@ -387,6 +458,25 @@
     GROUP BY DATE(t.occurred_at), t.category_id, cat.name
   ) c
     ON c.date = d.date
+  LEFT JOIN (
+    SELECT
+      DATE(t.occurred_at) AS date,
+      t.category_id       AS category_id,
+      COALESCE(cat.name, '미분류') AS category_name,
+      COALESCE(SUM(t.amount), 0)  AS category_amount
+    FROM transactions t
+    LEFT JOIN categories cat ON cat.category_id = t.category_id
+    WHERE t.user_id = #{userId}
+      AND t.occurred_at <![CDATA[>=]]> #{from}
+      AND t.occurred_at <![CDATA[<=]]> #{to}
+      AND t.deleted_at IS NULL
+      AND t.tx_type = 'EXPENSE'
+      AND t.impulse_flag = 1
+      AND t.is_refund = 0
+      AND t.canceled_at IS NULL
+    GROUP BY DATE(t.occurred_at), t.category_id, cat.name
+  ) ic
+    ON ic.date = d.date
 
   ORDER BY d.date ASC, c.category_amount DESC
 </select>

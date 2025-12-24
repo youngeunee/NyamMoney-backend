@@ -265,6 +265,19 @@ CREATE TABLE IF NOT EXISTS user_follows (
     REFERENCES users(user_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- 채팅 내역
+CREATE TABLE challenge_chat_messages (
+  chat_id        BIGINT AUTO_INCREMENT PRIMARY KEY,
+  challenge_id   BIGINT NOT NULL,
+  sender_id      BIGINT NOT NULL,
+  sender_nickname VARCHAR(50) NOT NULL,
+  content        TEXT NOT NULL,
+  sent_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  INDEX idx_challenge_id (challenge_id),
+  INDEX idx_sent_at (sent_at)
+);
+
 
 
 

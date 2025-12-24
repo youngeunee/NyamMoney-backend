@@ -29,7 +29,7 @@ public interface ChallengeParticipantMapper {
 
 	int countParticipants(Long challengeId);
 
-	int JOINEDParticipant(Long userId, Long challengeId);
+	int JOINEDParticipant(@Param("challengeId") Long challengeId, @Param("userId") Long userId);
 	// 특정 챌린지 참여중인 사용자 목록 조회
 	List<ChallengeParticipantItem> selectParticipantsByChallengeId(Long challengeId);
 

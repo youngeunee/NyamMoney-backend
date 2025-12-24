@@ -30,4 +30,12 @@ public interface UserService {
 	boolean checkLoginId(String loginId);
 
 	CursorPage<UserPostItem> getUserPosts(Long userId, UserPostCursorRequest request);
+
+	boolean checkEmail(String email);
+	
+	void resetPassword(Long userId, String newPassword, String newPasswordConfirm);
+
+	void validateUser(Long userId, String loginId, String email);
+
+	void validateSignupEmailAvailable(String email);
 }

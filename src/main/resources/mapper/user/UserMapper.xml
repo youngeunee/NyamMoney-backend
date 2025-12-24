@@ -150,6 +150,12 @@
 		WHERE login_id = #{loginId}
 	</select>
 	
+	<select id="countEmail" parameterType="String" resultType="int">
+		SELECT COUNT(*)
+		FROM users
+		WHERE email = #{email}
+	</select>
+	
 	<select id="selectUserPostsCursor" resultMap="UserPostItemMap">
 	    SELECT
 	      p.post_id,

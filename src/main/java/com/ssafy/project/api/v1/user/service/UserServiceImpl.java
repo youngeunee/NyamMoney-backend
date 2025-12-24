@@ -20,6 +20,8 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.ssafy.project.api.v1.auth.service.AuthService;
+import com.ssafy.project.api.v1.auth.service.SignupEmailVerificationService;
 import com.ssafy.project.api.v1.user.dto.UserDetailResponse;
 import com.ssafy.project.api.v1.user.dto.UserDto;
 import com.ssafy.project.api.v1.user.dto.UserLoginRequest;
@@ -46,18 +48,26 @@ public class UserServiceImpl implements UserService {
 	private final PasswordEncoder passwordEncoder;
 	private final JWTUtil jwtUtil;
 //	private final RefreshTokenMapper rMapper;
+	private final AuthService authService;
 	private final RefreshTokenRepository rMapper;
 	private final StringRedisTemplate redisTemplate;
 	
 	private static final int DEFAULT_SIZE = 10;
     private static final int MAX_SIZE = 50;
-	
-	public UserServiceImpl(UserMapper uMapper, PasswordEncoder passwordEncoder, JWTUtil jwtUtil, RefreshTokenRepository rMapper, StringRedisTemplate redisTemplate) {
+    
+	public UserServiceImpl(UserMapper uMapper, 
+			PasswordEncoder passwordEncoder, 
+			JWTUtil jwtUtil, 
+			RefreshTokenRepository rMapper, 
+			StringRedisTemplate redisTemplate, 
+			AuthService authService) {
+		
 		this.uMapper = uMapper;
 		this.passwordEncoder = passwordEncoder;
 		this.jwtUtil = jwtUtil;
 		this.rMapper = rMapper;
 		this.redisTemplate = redisTemplate;
+		this.authService = authService;
 	}
 	
 	@Override
@@ -65,6 +75,10 @@ public class UserServiceImpl implements UserService {
 		// 비밀번호 일치 여부 확인
 		if(!req.getPassword().equals(req.getPasswordConfirm())) {
 			throw new IllegalArgumentException("PASSWORD_MISMATCH");
+		}
+		
+		if (!authService.isVerified(req.getEmail())) {
+		    throw new IllegalStateException("이메일 인증이 필요합니다.");
 		}
 		
 		String hashedPw = passwordEncoder.encode(req.getPassword());
@@ -184,7 +198,14 @@ public class UserServiceImpl implements UserService {
         });
 
 
-		return new UserLoginResponse(user.getUserId(), user.getLoginId(), user.getNickname(), accessToken, refreshToken, user.getRole(), user.getName());
+		return new UserLoginResponse(
+                user.getUserId(),
+                user.getLoginId(),
+                user.getNickname(),
+                accessToken,
+                user.getRole(),
+                user.getName(),
+                refreshToken);
 	}
 
 	@Override
@@ -319,6 +340,11 @@ public class UserServiceImpl implements UserService {
 	}
 	
 	@Override
+	public boolean checkEmail(String email) {
+		return uMapper.countEmail(email) > 0;
+	}
+	
+	@Override
 	public CursorPage<UserPostItem> getUserPosts(Long userId, UserPostCursorRequest req) {
 
 	        // 1) size 결정 (안 들어오면 기본값)
@@ -365,5 +391,48 @@ public class UserServiceImpl implements UserService {
 	        return new CursorPage<>(rows, nextCursor, hasNext, totalCount);
 
 	    }
+		
+	@Override
+	public void resetPassword(Long userId, String newPassword, String newPasswordConfirm) {
+	    UserDto user = uMapper.findById(userId);
 
+	    if (user == null) throw new IllegalArgumentException("해당 사용자를 찾을 수 없습니다.");
+
+	    if (newPassword == null || !newPassword.equals(newPasswordConfirm)) {
+	        throw new IllegalArgumentException("새 비밀번호가 일치하지 않습니다.");
+	    }
+
+	    if (passwordEncoder.matches(newPassword, user.getPwHash())) {
+	        throw new IllegalArgumentException("이전 비밀번호와 다른 비밀번호를 사용해 주세요.");
+	    }
+
+	    String newPwHash = passwordEncoder.encode(newPassword);
+
+	    int updated = uMapper.updatePassword(userId, newPwHash);
+	    if (updated == 0) throw new IllegalStateException("비밀번호 변경 실패");
+	}
+
+	@Override
+	public void validateUser(Long userId, String loginId, String email) {
+	    UserDto user = uMapper.findById(userId);
+
+	    if (user == null) {
+	        throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
+	    }
+
+	    if (!user.getEmail().equals(email)) {
+	        throw new IllegalArgumentException("이메일 정보가 일치하지 않습니다.");
+	    }
+	    
+	    if(!user.getLoginId().equals(loginId)) {
+	        throw new IllegalArgumentException("아이디 정보가 일치하지 않습니다.");
+	    }
+	}
+
+	@Override
+	public void validateSignupEmailAvailable(String email) {
+		if(uMapper.countEmail(email) != 0) {
+			throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+		}
+	}
 }

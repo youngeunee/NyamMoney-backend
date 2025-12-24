@@ -47,7 +47,7 @@
     <select id="JOINEDParticipant" resultType="int">
         SELECT COUNT(*)
         FROM challenge_participants
-        WHERE challenge_id = #{challengeId} AND user_id = #{userId} AND status = 'JOINED'
+        WHERE user_id = #{userId} AND challenge_id = #{challengeId} AND status = 'JOINED'
     </select>
 
     <!-- 참여 -->

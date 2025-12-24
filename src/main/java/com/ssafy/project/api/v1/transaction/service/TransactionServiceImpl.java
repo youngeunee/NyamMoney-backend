@@ -166,7 +166,10 @@ public class TransactionServiceImpl implements TransactionService {
         if (from.isAfter(to)) {
             throw new IllegalArgumentException("from은 to보다 이후일 수 없습니다.");
         }
+        
+        String q = (req.getQ() == null || req.getQ().trim().isEmpty()) ? null : req.getQ().trim();
 
+        
         LocalDateTime cursorOccurredAt = null;
         Long cursorTransactionId = null;
 
@@ -180,6 +183,7 @@ public class TransactionServiceImpl implements TransactionService {
                 userId,
                 from,
                 to,
+                q,
                 cursorOccurredAt,
                 cursorTransactionId,
                 size + 1
@@ -194,7 +198,7 @@ public class TransactionServiceImpl implements TransactionService {
             nextCursor = CursorUtil.format(last.getOccurredAt(), last.getTransactionId());
         }
 
-        long totalCount = transactionMapper.countTransactionsByPeriod(userId, from, to);
+        long totalCount = transactionMapper.countTransactionsByPeriod(userId, from, to, q);
         return new CursorPage<>(rows, nextCursor, hasNext, totalCount);
     }
 

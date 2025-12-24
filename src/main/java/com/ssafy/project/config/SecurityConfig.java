@@ -39,7 +39,12 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         // 로컬 프론트 주소 허용
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        // 5500 추가 WebSocket ..
+        config.setAllowedOrigins(List.of(
+                "http://localhost:5173", // 실제 Vue dev server
+                "http://localhost:5500", // ws-test.html 테스트용
+                "http://localhost:8080"  // (선택) 자기 자신
+        ));
 
         // 허용 메서드
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
@@ -70,6 +75,10 @@ public class SecurityConfig {
 
                         // ✅ CORS preflight(OPTIONS)는 무조건 허용 (중요)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // webSocket 허용
+                        .requestMatchers("/ws-challenge-chat").permitAll()
+                        .requestMatchers("/ws-challenge-chat/**").permitAll()
+
 
                         // ✅ Swagger는 항상 열어두기
                         .requestMatchers(
@@ -92,7 +101,8 @@ public class SecurityConfig {
                                 "/api/v1/users/signup",
                                 "/api/v1/auth/refresh",
                                 "/api/v1/users/check-nickname",
-                                "/api/v1/users/check-loginId"
+                                "/api/v1/users/check-loginId",
+                                "/api/v1/users/check-email"
                         )
                         .permitAll()
 

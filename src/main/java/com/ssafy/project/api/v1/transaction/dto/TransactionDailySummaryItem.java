@@ -18,5 +18,8 @@ public class TransactionDailySummaryItem {
     private LocalDate date;
     private Long totalExpense;
     private Long totalImpulseExpense;
+    private Long totalIncome;
     private List<CategorySummaryItem> categorySummaries;
+    private List<CategorySummaryItem> categoryImpulseSummaries;
+
 }

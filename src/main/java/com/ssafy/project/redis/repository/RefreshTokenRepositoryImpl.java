@@ -139,4 +139,16 @@ public class RefreshTokenRepositoryImpl implements RefreshTokenRepository {
             }
         });
     }
+
+    // webSocket userId 찾기위해
+    @Override
+    public boolean existsByUserId(Long userId) {
+        if (userId == null) return false;
+
+        String userKey = "refresh:user:" + userId;
+
+        Boolean exists = redis.hasKey(userKey);
+        return Boolean.TRUE.equals(exists);
+    }
+
 }

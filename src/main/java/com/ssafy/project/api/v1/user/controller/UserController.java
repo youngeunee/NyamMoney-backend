@@ -18,8 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ssafy.project.api.v1.user.dto.DuplicateCheckResponse;
 import com.ssafy.project.api.v1.user.dto.UserDetailResponse;
 import com.ssafy.project.api.v1.user.dto.UserDto;
-import com.ssafy.project.api.v1.user.dto.UserLoginRequest;
-import com.ssafy.project.api.v1.user.dto.UserLoginResponse;
 import com.ssafy.project.api.v1.user.dto.UserPasswordUpdateRequest;
 import com.ssafy.project.api.v1.user.dto.UserPostCursorRequest;
 import com.ssafy.project.api.v1.user.dto.UserPostItem;
@@ -31,7 +29,6 @@ import com.ssafy.project.api.v1.user.service.UserService;
 import com.ssafy.project.common.dto.CursorPage;
 import com.ssafy.project.security.auth.UserPrincipal;
 
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 
 @RestController
@@ -44,7 +41,6 @@ public class UserController {
 		this.uService = uService;
 	}
 	
-	@SecurityRequirement(name = "")
 	@PostMapping("/signup")
 	public ResponseEntity<UserSignupResponse> signup(@Valid @RequestBody UserSignupRequest req){
 		UserDto user = uService.signup(req);
@@ -78,7 +74,6 @@ public class UserController {
 		return ResponseEntity.ok(Map.of("message", "비밀번호가 변경되었습니다."));
 	}
 	
-	@SecurityRequirement(name = "")
 	@GetMapping("/check-nickname")
 	public DuplicateCheckResponse checkNickname(@RequestParam String nickname) {
 	    boolean exists = uService.checkNickname(nickname);
@@ -90,7 +85,6 @@ public class UserController {
 	    );
 	}
 	
-	@SecurityRequirement(name = "")
 	@GetMapping("/check-loginId")
 	public DuplicateCheckResponse checkLoginId(@RequestParam String loginId) {
 	    boolean exists = uService.checkLoginId(loginId);
@@ -101,7 +95,17 @@ public class UserController {
 	            loginId
 	    );
 	}
-
+	
+	@GetMapping("/check-email")
+	public DuplicateCheckResponse checkEmail(@RequestParam String email) {
+		boolean exists = uService.checkEmail(email);
+		
+		return new DuplicateCheckResponse(
+				!exists,
+				"email", email
+		);
+	}
+	
 	@GetMapping("/me")
 	public ResponseEntity<UserDetailResponse> getMyDetail(@AuthenticationPrincipal UserPrincipal principal) {
 		Long userId = principal.getUserId();

@@ -75,7 +75,8 @@ public class SecurityConfig {
 
                         // ✅ CORS preflight(OPTIONS)는 무조건 허용 (중요)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // webSocket 허
+                        // webSocket 허용
+                        .requestMatchers("/ws-challenge-chat").permitAll()
                         .requestMatchers("/ws-challenge-chat/**").permitAll()
 
 

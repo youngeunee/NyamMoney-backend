@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
+import org.springframework.security.config.DebugBeanDefinitionParser;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
@@ -29,35 +30,35 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
             WebSocketHandler wsHandler,
             Map<String, Object> attributes
     ) {
-        // 1️⃣ 쿼리 파라미터에서 token 꺼내기
-        String query = request.getURI().getQuery(); // token=xxx
-        String token = null;
+    	log.debug("===== WS HANDSHAKE 들어옴");
+    	
+    	// CONNECT headers에서 Authorization 읽기
+        String authHeader = request.getHeaders().getFirst("Authorization");
+        log.debug("[WS] Authorization header = {}", authHeader);
 
-        if (query != null && query.startsWith("token=")) {
-            token = query.substring(6);
-        }
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
 
-        if (token != null) {
             try {
-                Claims claims = jwtUtil.getClaims(token);
-
-                Long userId = claims.get("userId", Long.class);
-                String loginId = claims.get("loginId", String.class);
-                String nickname = claims.get("nickname", String.class);
-
-                UserPrincipal principal =
-                        new UserPrincipal(userId, loginId, nickname);
-
-                log.info("[WS] principal 저장 성공: {}", principal);
-                attributes.put("principal", principal);
-
+            	Claims claims = jwtUtil.getClaims(token);
+            	
+            	Long userId = claims.get("userId", Long.class);
+            	String loginId = claims.get("loginId", String.class);
+            	String nickname = claims.get("nickname", String.class);
+            	
+            	UserPrincipal principal =
+            			new UserPrincipal(userId, loginId, nickname);
+            	
+            	attributes.put("principal", principal);
+            	log.info("[WS] principal 저장 성공: {}", principal);
+            	
             } catch (Exception e) {
-                log.warn("[WS] 토큰 검증 실패");
+            	log.warn("[WS] 토큰 검증 실패");
             }
         }
-
         return true;
     }
+        
 
     @Override
     public void afterHandshake(

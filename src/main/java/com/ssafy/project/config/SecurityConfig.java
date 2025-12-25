@@ -98,6 +98,8 @@ public class SecurityConfig {
                         // ✅ 회원가입 / 로그인은 토큰 없이 가능
                         .requestMatchers(
                                 "/api/v1/auth/login",
+                                "/api/v1/auth/signup/**",
+                                "/api/v1/auth/password/**",
                                 "/api/v1/users/signup",
                                 "/api/v1/auth/refresh",
                                 "/api/v1/users/check-nickname",

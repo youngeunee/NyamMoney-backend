@@ -1,7 +1,6 @@
 package com.ssafy.project.api.v1.auth.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
@@ -13,8 +12,8 @@ import lombok.Setter;
 @Setter
 public class PasswordResetConfirmRequest {
 
-	@NotNull
-    private Long userId;
+    @NotBlank
+    private String loginId;
 
     @NotBlank
     private String newPassword;

@@ -2,8 +2,10 @@ package com.ssafy.project.api.v1.auth.service;
 
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.ssafy.project.api.v1.auth.dto.TokenRefreshResponse;
 import com.ssafy.project.api.v1.user.dto.UserDto;
@@ -45,7 +47,7 @@ public class AuthServiceImpl implements AuthService {
 	public TokenRefreshResponse refresh(String refreshToken) {
 
         if (refreshToken == null || refreshToken.isBlank()) {
-            throw new IllegalArgumentException("?„ì§ ?§„ refresh token ?„ì—ë§??¬ìš©??ê¸°ëŠ¥?˜ì§„í–‰ ??ë‹ˆ??");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "refresh token이 없습니다.");
         }
 
 		Claims claims  = jwtUtil.getClaims(refreshToken);
@@ -58,14 +60,14 @@ public class AuthServiceImpl implements AuthService {
 //        RefreshTokenDto rToken = rMapper.findByTokenHash(refreshToken);
 		
         if (jti == null) {
-            throw new IllegalArgumentException("유효하지 않은 refresh token 입니다.");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "유효하지 않은 refresh token 입니다.");
         }
         
         Map<Object, Object> stored = refreshTokenRepository.findByJti(jti);
         if (stored == null || stored.isEmpty()) {
             // 인덱스에 남아있을 수 있으니 정리
             refreshTokenRepository.deleteByJti(userId, jti);
-            throw new IllegalArgumentException("유효하지 않은 refresh token 입니다.");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "유효하지 않은 refresh token 입니다.");
         }
 
         String storedUserId = (String) stored.get("userId");
@@ -73,17 +75,17 @@ public class AuthServiceImpl implements AuthService {
 
         if (storedUserId == null || !storedUserId.equals(String.valueOf(userId))) {
             refreshTokenRepository.deleteByJti(userId, jti);
-            throw new IllegalArgumentException("유효하지 않은 refresh token 입니다.");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "유효하지 않은 refresh token 입니다.");
         }
         if (storedLoginId != null && !storedLoginId.equals(loginId)) {
             refreshTokenRepository.deleteByJti(userId, jti);
-            throw new IllegalArgumentException("유효하지 않은 refresh token 입니다.");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "유효하지 않은 refresh token 입니다.");
         }
 
         UserDto user = uMapper.findById(userId);
         if (user == null) {
             refreshTokenRepository.deleteAllByUserId(userId);
-            throw new IllegalArgumentException("존재하지 않는 유저입니다.");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "존재하지 않는 유저입니다.");
         }
 
         String newAccessToken = jwtUtil.createAccessToken(user);

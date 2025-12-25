@@ -35,7 +35,9 @@ public interface UserService {
 	
 	void resetPassword(Long userId, String newPassword, String newPasswordConfirm);
 
-	void validateUser(Long userId, String loginId, String email);
+	UserDto validateUser(String loginId, String email);
+
+	UserDto findByLoginId(String loginId);
 
 	void validateSignupEmailAvailable(String email);
 }

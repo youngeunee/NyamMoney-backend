@@ -10,7 +10,6 @@ import lombok.Setter;
 @Data
 @Setter
 public class PasswordResetVerifyCodeRequest {
-    private Long userId;
     private String loginId;
     private String verificationCode;
 }

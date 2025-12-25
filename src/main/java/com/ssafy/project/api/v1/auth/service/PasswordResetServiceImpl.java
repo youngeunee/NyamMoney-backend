@@ -14,8 +14,9 @@ import com.ssafy.project.api.v1.auth.dto.PasswordResetSendCodeRequest;
 import com.ssafy.project.api.v1.auth.dto.PasswordResetSendCodeResponse;
 import com.ssafy.project.api.v1.auth.dto.PasswordResetVerifyCodeRequest;
 import com.ssafy.project.api.v1.auth.dto.PasswordResetVerifyCodeResponse;
-import com.ssafy.project.api.v1.user.service.UserService;
 import com.ssafy.project.api.v1.auth.dto.VerificationState; // ✅
+import com.ssafy.project.api.v1.user.dto.UserDto;
+import com.ssafy.project.api.v1.user.service.UserService;
 
 // 참고: https://velog.io/@viva99/Redis%EB%A5%BC-%EC%9D%B4%EC%9A%A9%ED%95%98%EC%97%AC-%EC%9D%B4%EB%A9%94%EC%9D%BC-%EC%9D%B8%EC%A6%9D 
 // 참고2: https://velog.io/@viva99/Redis%EB%A5%BC-%EC%9D%B4%EC%9A%A9%ED%95%98%EC%97%AC-%EC%9D%B4%EB%A9%94%EC%9D%BC-%EC%9D%B8%EC%A6%9D 
@@ -50,18 +51,17 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 	    return PREFIX + "meta:" + loginId;
 	}
 
-	private String verifiedKey(Long userId) {
-	    return PREFIX + "verified:" + userId;
+	private String verifiedKey(String loginId) {
+	    return PREFIX + "verified:" + loginId;
 	}
 
 	@Override
 	public PasswordResetSendCodeResponse sendVerificationCode(PasswordResetSendCodeRequest req) throws NoSuchAlgorithmException {
-	    Long userId = req.getUserId();
 	    String loginId = req.getLoginId();
 	    String email = req.getEmail();
 
 	    // 1️⃣ 사용자 검증
-	    userService.validateUser(userId, loginId, email);
+	    userService.validateUser(loginId, email);
 
 	    // 2️⃣ 재전송 쿨타임 체크
 	    long now = System.currentTimeMillis();
@@ -97,7 +97,6 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
 	@Override
 	public PasswordResetVerifyCodeResponse checkVerificationCode(PasswordResetVerifyCodeRequest req) throws NoSuchAlgorithmException {
-	    Long userId = req.getUserId();
 	    String loginId = req.getLoginId();
 	    String inputCode = req.getVerificationCode();
 
@@ -129,7 +128,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
 	    // 4️⃣ 성공 처리
 	    redisTemplate.opsForValue()
-	            .set(verifiedKey(userId), "true", VERIFIED_TTL_MINUTES, java.util.concurrent.TimeUnit.MINUTES);
+	            .set(verifiedKey(loginId), "true", VERIFIED_TTL_MINUTES, java.util.concurrent.TimeUnit.MINUTES);
 
 	    redisTemplate.delete(codeKey(loginId));
 	    redisTemplate.delete(metaRedisKey);
@@ -141,23 +140,24 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
 	@Override
 	public void changePassword(PasswordResetConfirmRequest req) {
-	    Long userId = req.getUserId();
+	    String loginId = req.getLoginId();
 
 	    // 1️⃣ 인증 완료 여부 확인
-	    String verified = redisTemplate.opsForValue().get(verifiedKey(userId));
+	    String verified = redisTemplate.opsForValue().get(verifiedKey(loginId));
 	    if (!"true".equals(verified)) {
 	        throw new IllegalStateException("인증이 완료되지 않았습니다.");
 	    }
 
 	    // 2️⃣ 실제 비밀번호 변경 (userService)
-	    userService.resetPassword(
-	            userId,
-	            req.getNewPassword(),
-	            req.getNewPasswordConfirm()
-	    );
+	    UserDto user = userService.findByLoginId(loginId);
+	    if (user == null) {
+	        throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
+	    }
+
+	    userService.resetPassword(user.getUserId(), req.getNewPassword(), req.getNewPasswordConfirm());
 
 	    // 3️⃣ 인증 상태 제거
-	    redisTemplate.delete(verifiedKey(userId));
+	    redisTemplate.delete(verifiedKey(loginId));
 	}
 	
 	private String hash(String raw) throws NoSuchAlgorithmException {

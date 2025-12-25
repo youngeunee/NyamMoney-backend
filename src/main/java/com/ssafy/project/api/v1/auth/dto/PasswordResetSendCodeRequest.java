@@ -10,7 +10,6 @@ import lombok.Setter;
 @Data
 @Setter
 public class PasswordResetSendCodeRequest {
-	Long userId;
-	String loginId;
-	String email;
+    String loginId;
+    String email;
 }

@@ -413,8 +413,8 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public void validateUser(Long userId, String loginId, String email) {
-	    UserDto user = uMapper.findById(userId);
+	public UserDto validateUser(String loginId, String email) {
+	    UserDto user = uMapper.findByLoginId(loginId);
 
 	    if (user == null) {
 	        throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
@@ -427,6 +427,13 @@ public class UserServiceImpl implements UserService {
 	    if(!user.getLoginId().equals(loginId)) {
 	        throw new IllegalArgumentException("아이디 정보가 일치하지 않습니다.");
 	    }
+
+	    return user;
+	}
+
+	@Override
+	public UserDto findByLoginId(String loginId) {
+	    return uMapper.findByLoginId(loginId);
 	}
 
 	@Override

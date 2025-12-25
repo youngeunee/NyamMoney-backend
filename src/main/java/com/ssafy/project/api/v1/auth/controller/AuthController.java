@@ -134,7 +134,7 @@ public class AuthController {
         return ResponseCookie.from(name, value)
                 .httpOnly(httpOnly)
                 .secure(true)
-                .sameSite("Lax")
+                .sameSite("None")
                 .path("/")
                 .maxAge(Duration.ofSeconds(maxAgeSeconds))
                 .build();

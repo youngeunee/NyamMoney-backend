@@ -12,7 +12,7 @@ import com.ssafy.project.security.auth.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/challenges")
+@RequestMapping("/api/v1/challenges")
 public class ChallengeChatQueryController {
     private final ChallengeChatService challengeChatService;
     public ChallengeChatQueryController(ChallengeChatService challengeChatService) {

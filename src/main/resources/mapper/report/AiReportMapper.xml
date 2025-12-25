@@ -16,7 +16,14 @@
 	      COALESCE(
 	        SUM(CASE WHEN t.impulse_flag = 1 THEN t.amount ELSE 0 END),
 	        0
-	      ) AS impulseSpend
+	      ) AS impulseSpend,
+	      CASE
+	        WHEN COALESCE(SUM(t.amount), 0) = 0 THEN 0
+	        ELSE ROUND(
+	          SUM(CASE WHEN t.impulse_flag = 1 THEN t.amount ELSE 0 END) * 1000
+	            / SUM(t.amount)
+	        ) / 10
+	      END AS impulseRatio
 	
 	  FROM transactions t
 	  LEFT JOIN categories c
@@ -47,7 +54,14 @@
                     WHEN t.impulse_flag = 1 THEN t.amount
                     ELSE 0
                 END
-            )                     AS impulseSpend
+            )                     AS impulseSpend,
+            CASE
+              WHEN COALESCE(SUM(t.amount), 0) = 0 THEN 0
+              ELSE ROUND(
+                SUM(CASE WHEN t.impulse_flag = 1 THEN t.amount ELSE 0 END) * 1000
+                  / SUM(t.amount)
+              ) / 10
+            END                   AS impulseRatio
         FROM transactions t
         LEFT JOIN categories c
                ON t.category_id = c.category_id

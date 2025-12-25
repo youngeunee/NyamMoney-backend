@@ -11,18 +11,27 @@ import org.springframework.stereotype.Service;
 import com.ssafy.project.api.v1.challenge.chat.dto.ChallengeChatMessage;
 import com.ssafy.project.api.v1.challenge.chat.mapper.ChallengeChatMapper;
 import com.ssafy.project.api.v1.challenge.mapper.ChallengeParticipantMapper;
+import com.ssafy.project.api.v1.user.mapper.UserMapper;
+import com.ssafy.project.domain.user.model.Role;
+import com.ssafy.project.api.v1.user.dto.UserDto;
 
 
 @Service
 public class ChallengeChatService {
     private final ChallengeParticipantMapper participantMapper;
     private final ChallengeChatMapper challengeChatMapper;
-    public ChallengeChatService(ChallengeParticipantMapper participantMapper, ChallengeChatMapper challengeChatMapper) {
+    private final UserMapper userMapper;
+    public ChallengeChatService(ChallengeParticipantMapper participantMapper, ChallengeChatMapper challengeChatMapper,
+    		UserMapper userMapper) {
     	this.participantMapper = participantMapper;
     	this.challengeChatMapper = challengeChatMapper;
+    	this.userMapper = userMapper;
     }
 
     public void validateParticipant(Long challengeId, Long userId) {
+    	if (isAdmin(userId)) {
+    		return;
+    	}
         int count = participantMapper.JOINEDParticipant(challengeId, userId);
         if (count == 0) {
             throw new RuntimeException("챌린지 참여자가 아닙니다.");
@@ -56,6 +65,12 @@ public class ChallengeChatService {
 		} catch (DateTimeParseException e) {
 			return null;
 		}
+	}
+
+	private boolean isAdmin(Long userId) {
+		if (userId == null) return false;
+		UserDto user = userMapper.findById(userId);
+		return user != null && user.getRole() == Role.ADMIN;
 	}
 
 }

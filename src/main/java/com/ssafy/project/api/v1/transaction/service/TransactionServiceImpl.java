@@ -145,8 +145,8 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     @Transactional(readOnly = true)
-    public TransactionSummaryResponse getSummary(Long userId, LocalDateTime from, LocalDateTime to) {
-        TransactionSummaryQuery q = new TransactionSummaryQuery(userId, from, to);
+    public TransactionSummaryResponse getSummary(Long userId, LocalDateTime from, LocalDateTime to, String query) {
+        TransactionSummaryQuery q = new TransactionSummaryQuery(userId, from, to, query);
         return transactionMapper.selectSummary(q);
     }
 
@@ -204,8 +204,8 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<TransactionDailySummaryItem> getDailySummary(Long userId, LocalDateTime from, LocalDateTime to) {
-        TransactionSummaryQuery q = new TransactionSummaryQuery(userId, from, to);
+    public List<TransactionDailySummaryItem> getDailySummary(Long userId, LocalDateTime from, LocalDateTime to, String query) {
+        TransactionSummaryQuery q = new TransactionSummaryQuery(userId, from, to, query);
         return transactionMapper.selectDailySummary(q);
     }
 

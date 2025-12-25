@@ -11,4 +11,5 @@ public class TransactionSummaryQuery {
     private Long userId;
     private LocalDateTime from;
     private LocalDateTime to;
+    private String q;
 }

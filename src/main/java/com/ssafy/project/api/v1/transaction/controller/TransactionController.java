@@ -124,7 +124,8 @@ public class TransactionController {
     public ResponseEntity<TransactionSummaryResponse> getSummary(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestParam(required = false) LocalDateTime from,
-            @RequestParam(required = false) LocalDateTime to
+            @RequestParam(required = false) LocalDateTime to,
+            @RequestParam(required = false) String q
     ) {
         Long userId = principal.getUserId();
 
@@ -138,7 +139,7 @@ public class TransactionController {
             throw new IllegalArgumentException("from은 to보다 이후일 수 없습니다.");
         }
 
-        TransactionSummaryResponse res = transactionService.getSummary(userId, start, end);
+        TransactionSummaryResponse res = transactionService.getSummary(userId, start, end, q);
         return ResponseEntity.ok(res);
     }
 
@@ -147,7 +148,8 @@ public class TransactionController {
             @AuthenticationPrincipal UserPrincipal principal,
             @PathVariable Long targetUserId,
             @RequestParam(required = false) LocalDateTime from,
-            @RequestParam(required = false) LocalDateTime to
+            @RequestParam(required = false) LocalDateTime to,
+            @RequestParam(required = false) String q
     ) {
         Long userId = principal.getUserId();
 
@@ -186,7 +188,7 @@ public class TransactionController {
             }
         }
 
-        TransactionSummaryResponse res = transactionService.getSummary(targetUserId, start, end);
+        TransactionSummaryResponse res = transactionService.getSummary(targetUserId, start, end, q);
         log.debug("호출 호출: ", res.toString());
         return ResponseEntity.ok(res);
     }
@@ -207,12 +209,13 @@ public class TransactionController {
     public ResponseEntity<List<TransactionDailySummaryItem>> getDailySummary(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestParam(required = false) LocalDateTime from,
-            @RequestParam(required = false) LocalDateTime to
+            @RequestParam(required = false) LocalDateTime to,
+            @RequestParam(required = false) String q
     ) {
         Long userId = principal.getUserId();
 
         // 기본값: to=now, from=to가 속한 달 1일 00:00:00
-        LocalDateTime end = (to != null) ? to : LocalDateTime.now();
+        LocalDateTime end = (to != null) ? to : LocalDate.now().plusDays(1).atStartOfDay();
         LocalDateTime start = (from != null)
                 ? from
                 : end.toLocalDate().withDayOfMonth(1).atStartOfDay();
@@ -222,7 +225,7 @@ public class TransactionController {
         }
 
         List<TransactionDailySummaryItem> res =
-                transactionService.getDailySummary(userId, start, end);
+                transactionService.getDailySummary(userId, start, end, q);
 
         return ResponseEntity.ok(res);
     }

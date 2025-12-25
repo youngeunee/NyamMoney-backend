@@ -26,11 +26,9 @@ public interface TransactionService {
 
 	TransactionDetailResponse getTransactionDetail(Long userId, Long transactionId);
 
-	TransactionSummaryResponse getSummary(Long userId, LocalDateTime start, LocalDateTime end);
 	
 	public CursorPage<TransactionItem> getTransactions(Long userId, TransactionCursorRequest req);
 
-	List<TransactionDailySummaryItem> getDailySummary(Long userId, LocalDateTime start, LocalDateTime end);
 
 	int syncNhTransactions(Long userId, LocalDate fromDate, LocalDate toDate);
 
@@ -43,4 +41,8 @@ public interface TransactionService {
 	Long mapCodeToCategoryId(String code);
 
 	TransactionUpsertParam mapToUpsertParam(NhCardApprovalItem it, Long userId);
+
+	TransactionSummaryResponse getSummary(Long userId, LocalDateTime from, LocalDateTime to, String q);
+
+	List<TransactionDailySummaryItem> getDailySummary(Long userId, LocalDateTime from, LocalDateTime to, String query);
 }

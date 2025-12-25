@@ -106,16 +106,17 @@
 	            ELSE 0.0
 	        END AS progress
 	
-	    FROM challenge_participants cp
-	    JOIN users u
-	      ON cp.user_id = u.user_id
-	    JOIN challenges c
-	      ON cp.challenge_id = c.challenge_id
-	
-	    WHERE cp.challenge_id = #{challengeId}
-	
-	    ORDER BY cp.joined_at ASC
-	</select>
+    FROM challenge_participants cp
+    JOIN users u
+      ON cp.user_id = u.user_id
+    JOIN challenges c
+      ON cp.challenge_id = c.challenge_id
+
+    WHERE cp.challenge_id = #{challengeId}
+      AND cp.status NOT IN ('REFUNDED', 'FAILED')
+
+    ORDER BY cp.joined_at ASC
+</select>
 	
 
 </mapper>
